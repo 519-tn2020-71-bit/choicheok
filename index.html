@@ -1206,7 +1206,7 @@ const mini=document.createElement("canvas");mini.id="mini";mini.title="미니맵
 const MINI_C={"r":"#5b5f66","y":"#7f8a4c","n":"#eef2f6",".":"#72a456",",":"#72a456","T":"#3f6b3a",":":"#c8a676","=":"#b9b2a4","x":"#d4c095","s":"#e0cfa2","~":"#4c84a6","w":"#4b5059","f":"#8e6a44"};
 function miniBase(m,s){if(m._mb&&m._mb.s===s)return m._mb.c;const c=document.createElement("canvas");c.width=m.w*s;c.height=m.h*s;const g=c.getContext("2d");
   for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){g.fillStyle=MINI_C[m.g[y][x]]||"#72a456";g.fillRect(x*s,y*s,s,s)}
-  for(const o of m.objs){const col={choga:"#b08a45",giwa:"#3b3f47",gate:"#6b675e",stall:"#b94a3a",well:"#7cb0cf",jars:"#6b3f22",hyeong:"#8e6a44",pyeong:"#a07a4c",desk:"#6d4b2c"}[o.k];if(!col)continue;g.fillStyle=col;g.fillRect(o.x*s,o.y*s,o.w*s,o.h*s)}
+  for(const o of m.objs){const col={house:"#6b675e",choga:"#b08a45",giwa:"#3b3f47",gate:"#6b675e",stall:"#b94a3a",well:"#7cb0cf",jars:"#6b3f22",hyeong:"#8e6a44",pyeong:"#a07a4c",desk:"#6d4b2c"}[o.k];if(!col)continue;g.fillStyle=col;g.fillRect(o.x*s,o.y*s,o.w*s,o.h*s)}
   m._mb={s,c};return c}
 function drawNav(t){
   const m=G.map,on=G.nav&&m&&!G.demo&&!$("#hud").hidden;
@@ -1688,13 +1688,13 @@ function buildNamwon(o){o=o||{};
   const willow=[18,8];m.g[willow[1]][willow[0]]="T";
   [[8,16],[13,15],[23,23],[27,27],[5,22],[40,24]].forEach(([x,y])=>m.g[y][x]=",");
   m.objs.push({k:"giwa",x:3,y:3,w:7,h:4,big:1,id:"temple"},{k:"altar",x:6,y:7,w:1,h:1,id:"altar"},{k:"stele",x:10,y:6,w:1,h:1,id:"stele"},
-    {k:"choga",x:13,y:4,w:5,h:4,id:"home"},{k:"jars",x:19,y:5,w:2,h:1,id:"jars"},{k:"pyeong",x:12,y:9,w:2,h:1,id:"pyeong"},
-    {k:"giwa",x:29,y:23,w:6,h:3,id:"jeong"},{k:"jars",x:36,y:24,w:2,h:1},{k:"well",x:26,y:24,w:1,h:1,id:"well"},
+    {k:"house",v:"kr5",x:12,y:4,w:7,h:4,id:"home"},{k:"jars",x:19,y:5,w:2,h:1,id:"jars"},{k:"pyeong",x:12,y:9,w:2,h:1,id:"pyeong"},
+    {k:"house",v:"kr1",x:28,y:23,w:7,h:3,id:"jeong"},{k:"jars",x:36,y:24,w:2,h:1},{k:"well",x:26,y:24,w:1,h:1,id:"well"},
     {k:"banner",x:26,y:7,w:1,h:1,c:"#2f4a6d"},{k:"banner",x:26,y:11,w:1,h:1,c:"#b53a2c"});
   if(o.ruin){for(const [x,y] of [[27,3],[27,4],[30,1],[31,1],[38,1],[44,6],[44,7],[33,16],[34,16]])m.g[y][x]=":";
     m.objs.push({k:"rubble",x:30,y:5,w:3,h:2},{k:"rubble",x:37,y:4,w:3,h:2},{k:"rubble",x:33,y:10,w:4,h:2},{k:"rubble",x:39,y:12,w:3,h:2},{k:"rubble",x:13,y:5,w:4,h:2,id:"homeR"},{k:"fire",x:31,y:7,w:1,h:1},{k:"fire",x:40,y:9,w:1,h:1});
     m.objs=m.objs.filter(o=>o.id!=="home"&&o.id!=="jars"&&o.id!=="pyeong")}
-  else m.objs.push({k:"giwa",x:30,y:3,w:5,h:3,small:1},{k:"choga",x:37,y:3,w:4,h:3},{k:"choga",x:31,y:10,w:4,h:3},{k:"choga",x:38,y:10,w:4,h:3},{k:"stall",x:35,y:14,w:3,h:1,goods:"rice"});
+  else m.objs.push({k:"house",v:"kr2",x:29,y:3,w:7,h:3},{k:"house",v:"kr3",x:37,y:3,w:6,h:3},{k:"house",v:"kr4",x:31,y:10,w:5,h:3},{k:"house",v:"kr6",x:37,y:10,w:6,h:3});
   m.willow=willow;return m;
 }
 /* 정상사 댁 뜰: 왼쪽 사랑채(글 읽는 곳)와 그 앞 책상, 오른쪽 안채, 사랑채 옆 창 밑 꽃밭 */
@@ -1737,8 +1737,8 @@ function buildChina(o){o=o||{};
   const m=newMap(40,26,"=");edge(m);rect(m,0,12,40,2,"~");rect(m,18,12,3,2,"=");
   rect(m,2,2,36,8,".");rect(m,2,16,36,8,".");rect(m,2,10,36,2,"=");rect(m,2,14,36,2,"=");
   trees(m,[[4,11],[10,11],[26,11],[34,11],[6,14],[14,14],[24,14],[33,14],[37,4],[2,20]]);
-  m.objs.push({k:"cnhouse",x:3,y:3,w:7,h:4,id:"h1"},{k:"cnhouse",x:12,y:3,w:7,h:4,id:"house"},{k:"cnhouse",x:24,y:3,w:7,h:4,id:"h3"},
-    {k:"cnhouse",x:5,y:18,w:7,h:4,id:"h4"},{k:"cnhouse",x:22,y:18,w:7,h:4,id:"h5"},{k:"stall",x:31,y:8,w:3,h:1,goods:"silk"},{k:"stall",x:14,y:19,w:3,h:1,goods:"cake"},
+  m.objs.push({k:"house",v:"cn2",x:3,y:3,w:7,h:4,id:"h1"},{k:"house",v:"cn6",x:12,y:3,w:7,h:4,id:"house"},{k:"house",v:"cn1",x:24,y:3,w:7,h:4,id:"h3"},
+    {k:"house",v:"cn3",x:5,y:18,w:7,h:4,id:"h4"},{k:"house",v:"cn4",x:21,y:18,w:7,h:4,id:"h5"},{k:"house",v:"cn5",x:30,y:18,w:8,h:4,id:"h6"},{k:"stall",x:31,y:8,w:3,h:1,goods:"silk"},{k:"stall",x:14,y:19,w:3,h:1,goods:"cake"},
     {k:"junk",x:30,y:12,w:1,h:1,pass:1,id:"junk"},{k:"lantern",x:20,y:7,w:1,h:1},{k:"lantern",x:17,y:16,w:1,h:1});
   return m;
 }
@@ -1758,7 +1758,7 @@ function buildDeck(o){o=o||{};const w=o.dw||12,h=o.dh||4,MW=36,MH=22;
   if(o.shore){                                             /* 떠나는 항구: 위쪽 땅과 기와집, 모래톱, 잔교 */
     rect(m,0,0,MW,6,".");rect(m,0,6,MW,2,"s");rect(m,x0+2,8,2,3,"=");
     trees(m,[[1,1],[5,4],[9,2],[26,4],[31,1],[34,3],[14,5],[21,5]]);
-    m.objs.push({k:"cnhouse",x:2,y:0,w:7,h:4},{k:"cnhouse",x:11,y:0,w:7,h:4},{k:"cnhouse",x:24,y:0,w:7,h:4},
+    m.objs.push({k:"house",v:"cn1",x:2,y:0,w:7,h:4},{k:"house",v:"cn4",x:11,y:0,w:7,h:4},{k:"house",v:"cn5",x:23,y:0,w:8,h:4},
       {k:"junk",x:4,y:13,w:1,h:1,pass:1},{k:"junk",x:31,y:15,w:1,h:1,pass:1},{k:"kboat",x:28,y:9,w:1,h:1,pass:1},{k:"stall",x:19,y:3,w:3,h:1,goods:"silk"});
   }
   if(o.isles){for(const [x,y,ph,sz] of [[3,2,0,1],[22,1,260,0.7],[30,19,120,1.2],[8,18,400,0.8]])m.objs.push({k:"islet",x,y,w:1,h:1,pass:1,ph,sz})}
@@ -1789,7 +1789,7 @@ function buildPrison(){
 /* 은진의 여관 */
 function buildInn(){
   const m=newMap(22,14,".");edge(m);rect(m,2,7,18,5,"x");
-  m.objs.push({k:"choga",x:4,y:2,w:6,h:4,id:"inn"},{k:"choga",x:13,y:2,w:5,h:4},{k:"mat",x:7,y:8,w:2,h:1,pass:1,id:"mat"},{k:"jars",x:16,y:8,w:2,h:1},{k:"well",x:3,y:9,w:1,h:1});
+  m.objs.push({k:"house",v:"kr5",x:3,y:2,w:7,h:4,id:"inn"},{k:"house",v:"kr4",x:13,y:2,w:5,h:4},{k:"mat",x:7,y:8,w:2,h:1,pass:1,id:"mat"},{k:"jars",x:16,y:8,w:2,h:1},{k:"well",x:3,y:9,w:1,h:1});
   return m;
 }
 /* 외딴 섬: 가운데 모래와 바위 언덕, 왼쪽 바위 동굴, 버드나무 */
@@ -1806,6 +1806,7 @@ function buildIsland(){
 OBJDRAW.lattice=(o,sx,sy)=>{R(sx+1,sy-12,14,16,"#1d1813");R(sx+2,sy-11,12,14,"#efe6cf");for(let i=0;i<3;i++){R(sx+2+i*4+3,sy-11,1,14,"#8e6a44");R(sx+2,sy-11+i*5+4,12,1,"#8e6a44")}};
 OBJDRAW.rubble=(o,sx,sy)=>{const W=o.w*16;R(sx,sy+o.h*16-10,W,8,"#3a2f28");for(let i=0;i<o.w*2;i++){R(sx+i*8+2,sy+o.h*16-16+(i%3)*2,9,3,"#2a2420");R(sx+i*8+4,sy+o.h*16-18,2,10,"#4a3a2c")}};
 OBJDRAW.mat=(o,sx,sy)=>{R(sx-2,sy+3,o.w*16+4,12,"#1d1813");R(sx-1,sy+4,o.w*16+2,10,"#d9c49c");for(let x=sx;x<sx+o.w*16;x+=3)R(x,sy+4,1,10,"#c4ad82")};
+OBJDRAW.house=(o,sx,sy,t)=>{if(typeof ITEMPIC!=="undefined"&&ITEMPIC[o.v]){ctx.fillStyle="rgba(0,0,0,.18)";ctx.beginPath();ctx.ellipse(sx+o.w*8,sy+o.h*16-2,o.w*8,4,0,0,Math.PI*2);ctx.fill();drawPic(o.v,sx+o.w*8,sy+o.h*16+2);return}(o.v[0]==="c"?OBJDRAW.cnhouse:o.v==="kr1"||o.v==="kr2"?OBJDRAW.giwa:OBJDRAW.choga)(o,sx,sy,t)};
 OBJDRAW.cnhouse=(o,sx,sy)=>{const W=o.w*16,H=o.h*16;R(sx+2,sy+H-30,W-4,30,"#ece8de");R(sx+W/2-6,sy+H-22,12,22,"#5a3b22");roof(sx-4,sx+W+4,sy+H-56,sy+H-30,["#6b6f78","#585c64","#3b3f47","#4b5059"])};
 OBJDRAW.yurt=(o,sx,sy)=>{const W=o.w*16,H=o.h*16;ctx.fillStyle="#cdbf9d";ctx.beginPath();ctx.ellipse(sx+W/2,sy+H-14,W/2,22,0,Math.PI,0);ctx.fill();R(sx+2,sy+H-14,W-4,14,"#b9a987");R(sx+W/2-5,sy+H-14,10,14,"#5a3b22")};
 OBJDRAW.deck=(o,sx,sy,t)=>{const W=o.dw*16,H=o.dh*16,top=sy+16,b=Math.round(Math.sin(t*1.4+o.x)*(G.storm?3:1)),K="#1d1813";
@@ -2304,6 +2305,58 @@ function travel(r,via,title,body){const pts=via.map(k=>PLACES[k]);G.here=via[via
   b.onclick=()=>openPanel(`<span class="eb">지도</span><h2>지금 어디에 있나</h2><p class="note">이 이야기는 조선, 일본, 명나라, 안남, 오랑캐 땅을 오가요. 파란 실선이 최척, 붉은 점선이 옥영이 지나온 길이에요.</p>${routeMapHTML()}
     <h3>이야기에 나오는 곳</h3><div class="list">${[["남원","최척의 고향. 만복사, 금교, 서문 밖 옛집이 있다."],["연곡사·섬진강","정유재란 때 피난한 지리산의 절과, 왜적이 사람들을 끌고 간 강."],["소흥·항주","최척이 여유문을 따라가 살고, 주우를 만나고, 아내와 다시 살림을 차린 명나라 고을."],["일본(돈우의 집)","옥영을 데려간 돈우의 집이 있던 곳. 본문에는 ‘낭고사’라고 나오는데, 지금의 어디인지 확실하지 않아 일본 땅에 대략 찍었어요."],["민·절","돈우의 배가 장사하러 오간 명나라 남쪽 바닷가(복건·절강)."],["안남","지금의 베트남 땅. 부부가 다시 만난 강 어구."],["요양·우미새","명나라 군대가 요양에서 오랑캐 땅으로 수백 리 들어가 진을 쳤다가 크게 진 곳. 우미새의 자리는 대략 찍었어요."],["은진","돌아오던 최척이 등창으로 쓰러진 곳."],["외딴 섬·순천","바다를 건너던 옥영 일행이 갇혔다가 조선 배를 만나 내린 곳."]].map(([n,d])=>`<div class="item"><div class="t">${n}</div><div class="d">${d}</div></div>`).join("")}</div>`)})();
 
+/* ═════════ 배경 꾸미기: 밋밋한 땅에 얼룩과 잔것을 깐다(교사 의견 2026-10-16 “배경이 너무 밋밋하다”) ═════════
+   - 땅 색의 얼룩: 풀·흙·모래·눈 칸에 넓은 진하고 옅은 얼룩을 덧칠해 같은 칸이 되풀이돼 보이지 않게
+   - 잔것: 바닥 종류마다 꽃·잔풀·돌·덤불 / 고사리·버섯·바위 / 조개·유목·해초 / 갈대·연잎 / 자갈·낙엽 / 눈더미
+   - 마을 살림: 짚더미, 장작, 소쿠리, 항아리, 돌아다니는 닭
+   모두 지나갈 수 있는 장식이라 길을 막지 않는다. 지도를 만들 때마다 저절로 붙는다(같은 지도면 늘 같은 자리). */
+(()=>{const d0=drawTile;
+  const nz=(x,y)=>{const f=(a,b)=>((hash2(a,b)&1023)/1023);const X=x/5,Y=y/5,x0=Math.floor(X),y0=Math.floor(Y),fx=X-x0,fy=Y-y0,sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);
+    const a=f(x0,y0),b=f(x0+1,y0),c=f(x0,y0+1),d=f(x0+1,y0+1);return a+(b-a)*sx+(c-a)*sy+(a-b-c+d)*sx*sy};
+  drawTile=function(ch,x,y,sx,sy,t){d0(ch,x,y,sx,sy,t);
+    if(!".,TfysS:xn".includes(ch))return;const v=nz(x,y)-0.5;if(Math.abs(v)<0.08)return;
+    ctx.fillStyle=v>0?`rgba(255,250,200,${Math.min(0.14,v*0.32)})`:`rgba(20,40,10,${Math.min(0.16,-v*0.36)})`;ctx.fillRect(sx,sy,16,16)}})();
+function decoRand(m){let s=(m.w*73856093^m.h*19349663^(m.g[1]?m.g[1].join("").length*83492791:0))>>>0||1;return()=>(s=(s*1103515245+12345)>>>0)/4294967296}
+function deco(m,theme){if(!m||m._deco)return m;m._deco=1;const r=decoRand(m),occ=new Set();
+  for(const o of m.objs)for(let y=o.y-1;y<o.y+o.h+1;y++)for(let x=o.x;x<o.x+o.w;x++)occ.add(x+","+y);
+  const at=(x,y)=>tileAt(m,x,y),nearW=(x,y)=>[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>at(x+a,y+b)==="~"),add=(x,y,t)=>m.objs.push({k:"dc",t,x,y,w:1,h:1,pass:1,s:r()});
+  for(let y=1;y<m.h-1;y++)for(let x=1;x<m.w-1;x++){if(occ.has(x+","+y))continue;const c=at(x,y),q=r();
+    if(c==="~"){if(nearW(x,y)&&[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>"~=".indexOf(at(x+a,y+b))<0)&&q<0.18)add(x,y,"lily");continue}
+    if((c==="."||c==="s"||c==="y")&&nearW(x,y)&&q<0.35){add(x,y,"reed");continue}
+    if(c==="."||c===","){if(q<0.05)add(x,y,"flower");else if(q<0.11)add(x,y,"tuft");else if(q<0.13)add(x,y,"stone");else if(q<0.145)add(x,y,"bush");
+      else if((theme==="village"||theme==="china")&&q<0.158)add(x,y,["hay","wood","basket","pot"][Math.floor(r()*4)])}
+    else if(c==="y"){if(q<0.07)add(x,y,"fern");else if(q<0.1)add(x,y,"tuft");else if(q<0.115)add(x,y,"mush");else if(q<0.13)add(x,y,"stone")}
+    else if(c==="s"){if(q<0.04)add(x,y,"shell");else if(q<0.06)add(x,y,"drift");else if(q<0.08)add(x,y,"weed")}
+    else if(c===":"||c==="x"){if(q<0.06)add(x,y,"pebble");else if(q<0.08)add(x,y,"leaf")}
+    else if(c==="n"){if(q<0.08)add(x,y,"snowlump")}}
+  if(theme==="village"&&!m.noHens){const spots=[];for(let i=0;i<60&&spots.length<3;i++){const x=2+Math.floor(r()*(m.w-4)),y=2+Math.floor(r()*(m.h-4));if(at(x,y)==="."&&!occ.has(x+","+y))spots.push([x,y])}
+    spots.forEach(([x,y],i)=>m.npcs.push(npc("hen"+i,"chicken","",x,y,"d",null,{wander:2})))}
+  return m}
+OBJDRAW.dc=(o,sx,sy,t)=>{const s=o.s,ox=Math.round(s*6)-3,K="#1d1813",sw=Math.round(Math.sin(t*2+o.x*1.3)*1);sx+=ox;
+  switch(o.t){
+    case "flower":{const c=["#e05a4a","#f0cf55","#f4f0e6","#e9a4b8","#9b7fd1"][Math.floor(s*5)];for(let i=0;i<3;i++){const fx=sx+4+i*4,fy=sy+8+((i*7+Math.floor(s*9))%4);R(fx,fy+2,1,4,"#4c7a36");R(fx-1+sw*(i%2),fy,3,2,c);R(fx+sw*(i%2),fy,1,1,"#fff6c8")}break}
+    case "tuft":for(let i=0;i<4;i++)R(sx+4+i*2+(i%2?sw:0),sy+9-(i%2)*2,1,5+(i%2)*2,i%2?"#4f7f3c":"#5d8e4c");break;
+    case "stone":R(sx+4,sy+10,8,4,K);R(sx+5,sy+10,6,3,"#9c988e");R(sx+6,sy+10,3,1,"#c4c0b6");break;
+    case "bush":R(sx+2,sy+6,12,9,K);R(sx+3,sy+6,10,8,"#3f6b3a");R(sx+4,sy+6,5,3,"#5c8c4a");R(sx+9,sy+9,2,2,"#e05a4a");break;
+    case "fern":for(let i=0;i<5;i++){R(sx+3+i*2,sy+12-i%3,1,4+i%3,"#4f7f3c");R(sx+2+i*2+sw,sy+10-i%3,3,1,"#6fa954")}break;
+    case "mush":R(sx+6,sy+11,2,4,"#efe6cf");R(sx+4,sy+9,6,3,K);R(sx+5,sy+9,4,2,"#c0392b");R(sx+6,sy+9,1,1,"#fff");break;
+    case "shell":R(sx+5,sy+10,5,4,K);R(sx+6,sy+10,3,3,"#f4d6c8");R(sx+7,sy+11,1,2,"#d9a090");break;
+    case "drift":R(sx+2,sy+11,12,3,K);R(sx+3,sy+11,10,2,"#a08a6a");R(sx+5,sy+11,3,1,"#c4b08a");break;
+    case "weed":R(sx+4,sy+11,8,2,"#4c7a36");R(sx+6,sy+9,1,3,"#3f6b3a");R(sx+9,sy+10,1,2,"#3f6b3a");break;
+    case "reed":for(let i=0;i<4;i++){const h=8+((i*5+Math.floor(s*7))%5);R(sx+3+i*3+(i%2?sw:0),sy+15-h,1,h,"#7f8a4c");R(sx+3+i*3+(i%2?sw:0),sy+15-h-2,1,3,"#8a6a44")}break;
+    case "lily":ctx.fillStyle="#4f8a4a";ctx.beginPath();ctx.ellipse(sx+8,sy+9,5,3,0,0.4,Math.PI*2);ctx.lineTo(sx+8,sy+9);ctx.fill();if(s>0.6){R(sx+7,sy+7,2,2,"#f4c6d2")}break;
+    case "pebble":R(sx+3,sy+11,2,2,"#9c988e");R(sx+8,sy+9,3,2,"#8f8a7e");R(sx+11,sy+12,2,1,"#a8a296");break;
+    case "leaf":R(sx+4,sy+10,3,2,"#c98a3a");R(sx+9,sy+12,3,2,"#a8642a");R(sx+7,sy+8,2,1,"#d9a050");break;
+    case "snowlump":R(sx+3,sy+10,10,4,"#dde4ec");R(sx+4,sy+9,7,2,"#ffffff");break;
+    case "hay":R(sx+1,sy+4,14,11,K);R(sx+2,sy+5,12,9,"#d9b45a");for(let i=0;i<5;i++)R(sx+3+i*2,sy+6,1,7,"#b08a3a");R(sx+2,sy+9,12,1,"#8c6a2a");break;
+    case "wood":for(let i=0;i<3;i++){R(sx+1,sy+7+i*3,14,3,K);R(sx+2,sy+8+i*3,12,1,"#8e6a44");R(sx+2,sy+7+i*3,2,2,"#c9a36a");R(sx+12,sy+7+i*3,2,2,"#c9a36a")}break;
+    case "basket":R(sx+3,sy+9,10,6,K);R(sx+4,sy+10,8,4,"#c9a36a");for(let i=0;i<4;i++)R(sx+4+i*2,sy+10,1,4,"#a8835a");R(sx+5,sy+8,6,2,"#e05a4a");break;
+    case "pot":R(sx+4,sy+6,8,9,K);R(sx+5,sy+7,6,7,"#6b3f22");R(sx+5,sy+6,6,1,"#5a321a");R(sx+6,sy+8,1,4,"#8a5a34");break}};
+/* 지도를 만들 때마다 꾸민다 */
+(()=>{const w=(name,theme)=>{const f=window[name];if(!f)return;window[name]=function(){return deco(f.apply(this,arguments),theme)}};
+  w("buildNamwon","village");w("buildJeong","yard");w("buildCamp","field");w("buildMount","mount");w("buildRiver","river");w("buildChina","china");
+  w("buildAnnam","shore");w("buildDeck","sea");w("buildYoyang","field");w("buildPrison","field");w("buildInn","village");w("buildIsland","shore")})();
+
 /* ═════════ 어려운 낱말 풀이: 본문 대사 아래에 짧은 뜻을 붙이고, 만난 낱말은 ‘낱말첩’에 모인다 ═════════
    뜻풀이는 게임을 위해 붙인 것이다(사전 뜻을 이 대목에 맞게 줄임). 한 줄에 너무 많이 붙지 않게, 처음 보는 낱말을 먼저 네 개까지만 보여 준다. */
 const GLOSS={"자는 백승":"자|어른이 된 뒤 본이름 대신 부르던 이름",
@@ -2557,11 +2610,14 @@ function GM(k){const v=GLOSS[k]||"";return v.includes("|")?v.split("|")[1]:v}
 
 /* 최척전 소품 그림 설정: [그림 파일, 왼쪽부터 든 것] · [기준(h 높이/w 너비), 크기(놀이 점), 손 위치] */
 const PICSHEETS=[["c_it1",["note","letter","piri","baby","bottle","bundle"]],["c_it2",["silver","compass","sail","oar","needle","peach"]],
-  ["c_it3",["clothes","mortar","jar","bonfire","sack","stick"]],["c_it4",["buddha","jpship","junk","kboat","cnhouse","yurt"]]];
+  ["c_it3",["clothes","mortar","jar","bonfire","sack","stick"]],["c_it4",["buddha","jpship","junk","kboat","cnhouse","yurt"]],
+  ["c_it5",["cn1","cn2","cn3","cn4","cn5","cn6"]],["c_it6",["kr1","kr2","kr3","kr4","kr5","kr6"]]];
 const PICALIAS={letter:["sojang"]};
 const PICSPEC={note:["h",9,"bot"],letter:["h",13,"bot"],sojang:["h",13,"bot"],piri:["h",14,"bot"],baby:["w",14,"bot"],bottle:["h",12,"bot"],bundle:["w",16,"bot"],
   silver:["w",14,"bot"],compass:["w",13,"bot"],sail:["h",14,"bot"],oar:["h",20,"bot"],needle:["w",12,"bot"],peach:["w",12,"bot"],
   clothes:["w",20,"bot"],mortar:["h",16,"bot"],jar:["h",16,"bot"],bonfire:["h",22,"bot"],sack:["h",13,"bot"],stick:["h",18,"bot"],
+  cn1:["w",100,"bot"],cn2:["w",110,"bot"],cn3:["w",96,"bot"],cn4:["w",112,"bot"],cn5:["w",128,"bot"],cn6:["w",100,"bot"],
+  kr1:["w",118,"bot"],kr2:["w",110,"bot"],kr3:["w",104,"bot"],kr4:["w",78,"bot"],kr5:["w",112,"bot"],kr6:["w",94,"bot"],
   buddha:["h",40,"bot"],jpship:["w",76,"bot"],junk:["w",76,"bot"],kboat:["w",54,"bot"],cnhouse:["w",118,"bot"],yurt:["w",76,"bot"]};
 const PICPROPS={
   buddha:(o,sx,sy)=>drawPic("buddha",sx+8,sy+15),
