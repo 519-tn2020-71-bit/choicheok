@@ -758,6 +758,8 @@ function drawTile(ch,x,y,sx,sy,t){
   else if(ch==="w"){R(sx,sy,16,16,"#a8865a");R(sx+2,sy+7,5,3,"#95744c");R(sx+9,sy+11,5,3,"#95744c");R(sx+10,sy+6,3,2,"#b89668");
     R(sx,sy,16,4,"#454a52");R(sx,sy+3,16,1,"#2f3338");R(sx,sy,16,1,"#6b717a");R(sx+4,sy+1,1,2,"#3a3e45");R(sx+10,sy+1,1,2,"#3a3e45")}
 }
+/* 나무 칸의 바닥: 둘레에서 가장 많은 땅 칸을 따른다(돌바닥·모래 위의 나무 밑에 풀 네모가 생기지 않게) */
+function treeGround(m,x,y){if(m._tg&&m._tg[y*m.w+x])return m._tg[y*m.w+x];const c={};for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]){const k=tileAt(m,x+dx,y+dy);if(k==="T"||k==="~"||k==="w"||k==="f")continue;c[k]=(c[k]||0)+1}let best=".",n=0;for(const k in c)if(c[k]>n){n=c[k];best=k}m._tg=m._tg||{};return m._tg[y*m.w+x]=(best===","?".":best)}
 function drawTree(sx,sy,t,seed){const pk=(Math.floor(seed*7)%3===0)?"o_pine":"o_tree";if(PROP[pk]){const sw=Math.sin(t*1.3+(seed||0))*0.02;ctx.fillStyle="rgba(0,0,0,.2)";ctx.beginPath();ctx.ellipse(sx+8,sy+15,11,3,0,0,Math.PI*2);ctx.fill();ctx.save();ctx.translate(sx+8,sy+16);ctx.transform(1,0,sw,1,0,0);drawProp(pk,0,0);ctx.restore();return}const o=Math.round(Math.sin(t*1.3+(seed||0))*1.2);
   R(sx+6,sy+2,4,14,"#5a3b22");R(sx+6,sy+2,1,14,"#6e4a2c");R(sx+2,sy+15,12,1,"rgba(0,0,0,.25)");
   blob(sx+8+o,sy-6,12,"#3f6b3a","#5c8c4a","#315a2e");blob(sx+2+o,sy-1,7,"#3f6b3a","#5c8c4a","#315a2e");blob(sx+14+o,sy-1,7,"#3f6b3a","#5c8c4a","#315a2e");
@@ -963,7 +965,7 @@ function draw(t){
   cx=Math.round(cx);cy=Math.round(cy);if(G.shake>0){cx+=Math.round((Math.random()-.5)*G.shake*2);cy+=Math.round((Math.random()-.5)*G.shake*2)}G.cam={x:cx,y:cy};
   const x0=Math.max(0,Math.floor(cx/T)),y0=Math.max(0,Math.floor(cy/T)),x1=Math.min(m.w-1,Math.ceil((cx+VW)/T)),y1=Math.min(m.h-1,Math.ceil((cy+VH)/T));
   const dr=[];
-  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const ch=m.g[y][x];drawTile(ch,x,y,x*T-cx,y*T-cy,t);if(ch==="T")dr.push({y:(y+1)*T,f:()=>drawTree(x*T-cx,y*T-cy,t,x*0.9+y*1.7)})}
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const ch=m.g[y][x];drawTile(ch==="T"?treeGround(m,x,y):ch,x,y,x*T-cx,y*T-cy,t);if(ch==="T")dr.push({y:(y+1)*T,f:()=>drawTree(x*T-cx,y*T-cy,t,x*0.9+y*1.7)})}
   for(let y=Math.min(m.h-1,y1+3);y>y1;y--)for(let x=x0;x<=x1;x++)if(m.g[y][x]==="T")dr.push({y:(y+1)*T,f:()=>drawTree(x*T-cx,y*T-cy,t,x*0.9+y*1.7)});
   for(const o of m.objs){if(o.hide&&o.hide())continue;const sx=o.x*T-cx,sy=o.y*T-cy;if(sx>VW+90||sx+o.w*T<-90||sy>VH+100||sy+o.h*T<-100)continue;
     dr.push({y:(o.y+o.h)*T-(o.k==="door"?8:0),f:()=>{const pk=propFor(o);if(pk&&PROP[pk]){ctx.fillStyle="rgba(0,0,0,.18)";ctx.beginPath();ctx.ellipse(sx+o.w*T/2,sy+o.h*T-2,o.w*T*0.5,4,0,0,Math.PI*2);ctx.fill();drawProp(pk,sx+o.w*T/2,sy+o.h*T+(o.k==="gate"?6:2))}else if(OBJDRAW[o.k])OBJDRAW[o.k](o,sx,sy,t)}})}
@@ -1635,7 +1637,7 @@ var PEOPLE_DB={
   s_namjang:{k:"s",n:"남장",a:"",d:"난리 때 옥영이 남자처럼 꾸민 것. 돈우는 끝내 옥영이 여자인 줄 모른다. 옥영은 이 덕분에 살아남는다."},
   s_hongdo:{k:"s",n:"‘홍도’라는 이름",a:"",d:"딸을 낳던 날 이웃이 복숭아를 보내와 지은 이름. 은진에서 만난 중국 사람이 홍도의 아버지임을 알게 하는 실마리다."},
   s_war1:{k:"s",n:"정유재란",a:"정유년의 난리",d:"1597년 왜군이 다시 쳐들어온 전쟁. 이때 남원성이 함락되고 최척의 식구가 흩어진다."},
-  s_war2:{k:"s",n:"심하 싸움",a:"우미새 싸움",d:"1619년 명나라가 후금(오랑캐)을 치러 나섰다가 크게 진 싸움. 조선은 강홍립을 원수로 군사를 보냈다가 항복한다."}
+  s_war2:{k:"s",n:"심하 싸움",a:"",d:"1619년 명나라가 후금(오랑캐)을 치러 나섰다가 크게 진 싸움. 조선은 강홍립을 원수로 군사를 보냈다가 항복한다."}
 };
 EMPH_K.push("삼가 죽지 않도록","반드시 기쁜 일이","붉은 점","붉은 사마귀","제가 바로 그 아이입니다","내 아내가 손수 지은 것","이름을 홍도라고","남장을");
 EMPH_B.push("피리","장육금불","만복사","절구","옥영","최척","돈우","몽석","몽선","홍도","안남","금교");
@@ -1745,17 +1747,30 @@ function buildAnnam(){
   const m=newMap(44,26,"~");rect(m,0,0,44,7,".");rect(m,0,7,44,5,"s");
   trees(m,[[2,1],[6,3],[11,1],[17,2],[24,1],[30,3],[36,1],[41,2],[3,5],[39,5]]);
   rect(m,5,16,11,4,"=");rect(m,9,12,2,4,"=");rect(m,28,16,11,4,"=");rect(m,32,12,2,4,"=");
-  m.objs.push({k:"deck",x:5,y:15,w:1,h:1,pass:1,dw:11,dh:4,kind:"junk",id:"junk"},{k:"deck",x:28,y:15,w:1,h:1,pass:1,dw:11,dh:4,kind:"jp",id:"jp"},
+  m.objs.push({k:"deck",x:5,y:15,w:1,h:1,pass:1,dw:11,dh:4,kind:"junk",id:"junk",sail:0},{k:"deck",x:28,y:15,w:1,h:1,pass:1,dw:11,dh:4,kind:"jp",id:"jp",sail:0},
     {k:"jpship",x:21,y:21,w:1,h:1,pass:1},{k:"jpship",x:40,y:23,w:1,h:1,pass:1},{k:"junk",x:2,y:23,w:1,h:1,pass:1});
   return m;
 }
 /* 바다 위의 배 한 척 */
-function buildDeck(o){o=o||{};const w=o.dw||12,h=o.dh||4;
-  const m=newMap(30,16,"~");const x0=Math.floor((30-w)/2),y0=6;rect(m,x0,y0,w,h,"=");
-  m.objs.push({k:"deck",x:x0,y:y0-1,w:1,h:1,pass:1,dw:w,dh:h,kind:o.kind||"jp",id:"deck"});
-  if(o.island)rect(m,0,0,30,2,"s");
-  return m;
+function buildDeck(o){o=o||{};const w=o.dw||12,h=o.dh||4,MW=36,MH=22;
+  const m=newMap(MW,MH,"~");const x0=Math.floor((MW-w)/2),y0=o.shore?11:9;rect(m,x0,y0,w,h,"=");
+  m.objs.push({k:"deck",x:x0,y:y0-1,w:1,h:1,pass:1,dw:w,dh:h,kind:o.kind||"jp",id:"deck",sail:o.sail==null?1:o.sail,oars:o.oars});
+  if(o.shore){                                             /* 떠나는 항구: 위쪽 땅과 기와집, 모래톱, 잔교 */
+    rect(m,0,0,MW,6,".");rect(m,0,6,MW,2,"s");rect(m,x0+2,8,2,3,"=");
+    trees(m,[[1,1],[5,4],[9,2],[26,4],[31,1],[34,3],[14,5],[21,5]]);
+    m.objs.push({k:"cnhouse",x:2,y:0,w:7,h:4},{k:"cnhouse",x:11,y:0,w:7,h:4},{k:"cnhouse",x:24,y:0,w:7,h:4},
+      {k:"junk",x:4,y:13,w:1,h:1,pass:1},{k:"junk",x:31,y:15,w:1,h:1,pass:1},{k:"kboat",x:28,y:9,w:1,h:1,pass:1},{k:"stall",x:19,y:3,w:3,h:1,goods:"silk"});
+  }
+  if(o.isles){for(const [x,y,ph,sz] of [[3,2,0,1],[22,1,260,0.7],[30,19,120,1.2],[8,18,400,0.8]])m.objs.push({k:"islet",x,y,w:1,h:1,pass:1,ph,sz})}
+  if(o.dolphins)for(const [x,y,ph] of [[6,15,0],[28,6,1.7],[31,14,3.1]])m.objs.push({k:"dolphin",x,y,w:1,h:1,pass:1,ph});
+  if(o.island)rect(m,0,0,MW,2,"s");
+  m.deck={x0,y0,w,h};return m;
 }
+/* 옆에 다른 배가 붙는다: 우리 배 위쪽에 갑판을 깔고, 뱃사람은 그 배 위에 선다 */
+function sideShip(kind,look,name){const m=G.map,d=m.deck,w=9,h=3,x0=Math.max(1,d.x0-7),y0=Math.max(1,d.y0-h-5);rect(m,x0,y0,w,h,"=");
+  const o={k:"deck",x:x0,y:y0-1,w:1,h:1,pass:1,dw:w,dh:h,kind,sail:1,id:"side"};m.objs.push(o);m._mb=null;
+  const n=npc("side",look,name,x0+w-3,y0+h-1,"d",null,{fixed:1});m.npcs.push(n);sfx("splash");return n}
+function sideGone(){const m=G.map,o=m.objs.find(x=>x.id==="side");if(!o)return;rect(m,o.x,o.y+1,o.dw,o.dh,"~");m.objs=m.objs.filter(x=>x!==o);m.npcs=m.npcs.filter(n=>n.id!=="side");m._mb=null}
 /* 요양 땅, 우미새: 위 명나라 진, 가운데 오랑캐가 오가는 들, 아래 조선 진 */
 function buildYoyang(){
   const m=newMap(40,26,".");edge(m);
@@ -1793,11 +1808,34 @@ OBJDRAW.rubble=(o,sx,sy)=>{const W=o.w*16;R(sx,sy+o.h*16-10,W,8,"#3a2f28");for(l
 OBJDRAW.mat=(o,sx,sy)=>{R(sx-2,sy+3,o.w*16+4,12,"#1d1813");R(sx-1,sy+4,o.w*16+2,10,"#d9c49c");for(let x=sx;x<sx+o.w*16;x+=3)R(x,sy+4,1,10,"#c4ad82")};
 OBJDRAW.cnhouse=(o,sx,sy)=>{const W=o.w*16,H=o.h*16;R(sx+2,sy+H-30,W-4,30,"#ece8de");R(sx+W/2-6,sy+H-22,12,22,"#5a3b22");roof(sx-4,sx+W+4,sy+H-56,sy+H-30,["#6b6f78","#585c64","#3b3f47","#4b5059"])};
 OBJDRAW.yurt=(o,sx,sy)=>{const W=o.w*16,H=o.h*16;ctx.fillStyle="#cdbf9d";ctx.beginPath();ctx.ellipse(sx+W/2,sy+H-14,W/2,22,0,Math.PI,0);ctx.fill();R(sx+2,sy+H-14,W-4,14,"#b9a987");R(sx+W/2-5,sy+H-14,10,14,"#5a3b22")};
-OBJDRAW.deck=(o,sx,sy,t)=>{const W=o.dw*16,H=o.dh*16,top=sy+16,b=Math.round(Math.sin(t*1.4+o.x)*1);
-  R(sx-10,top-4+b,W+20,H+14,"#1d1813");R(sx-8,top-2+b,W+16,H+10,o.kind==="jp"?"#5a3b22":"#7a5634");R(sx-8,top+H+2+b,W+16,6,o.kind==="jp"?"#3a2618":"#5a3b22");
-  const mx=sx+W/2;R(mx-1,top-70,3,72,"#5a3b22");
-  if(o.kind==="jp"){R(mx-26,top-66,52,40,"#1d1813");R(mx-25,top-65,50,38,"#efe3c6");for(let i=0;i<5;i++)R(mx-25,top-65+i*8,50,1,"#cdbf9d")}
-  else{for(let i=0;i<5;i++){R(mx-24+i,top-66+i*9,48-i*2,8,"#1d1813");R(mx-23+i,top-65+i*9,46-i*2,6,"#b9784a")}}};
+OBJDRAW.deck=(o,sx,sy,t)=>{const W=o.dw*16,H=o.dh*16,top=sy+16,b=Math.round(Math.sin(t*1.4+o.x)*(G.storm?3:1)),K="#1d1813";
+  const wood=o.kind==="jp"?["#4a2f1c","#6b4a2c","#8a6440"]:o.kind==="junk"?["#5a2e1e","#7a4228","#a0603a"]:["#5a3b22","#7a5634","#a07a50"];
+  const hull=(pad,col)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(sx-8-pad,top-2-pad+b);ctx.lineTo(sx+W+6+pad,top-2-pad+b);ctx.lineTo(sx+W+26+pad,top+H/2+b);ctx.lineTo(sx+W+6+pad,top+H+8+pad+b);ctx.lineTo(sx-8-pad,top+H+8+pad+b);ctx.lineTo(sx-16-pad,top+H/2+b);ctx.closePath();ctx.fill()};
+  ctx.fillStyle="rgba(10,30,50,.28)";ctx.beginPath();ctx.ellipse(sx+W/2+6,top+H+12+b,W/2+26,7,0,0,Math.PI*2);ctx.fill();
+  hull(2,K);hull(0,wood[0]);
+  R(sx-6,top+b,W+12,H+2,wood[2]);for(let y=top+4;y<top+H;y+=5)R(sx-6,y+b,W+12,1,wood[1]);for(let x=sx+8;x<sx+W;x+=26)R(x,top+b,1,H+2,wood[1]);
+  R(sx-6,top-3+b,W+12,3,K);for(let x=sx-4;x<sx+W+4;x+=12)R(x,top-7+b,2,5,wood[0]);R(sx-6,top-8+b,W+12,2,wood[1]);
+  R(sx-6,top+H+2+b,W+12,4,wood[0]);R(sx-6,top+H+5+b,W+12,1,"#2a1a10");
+  if(o.oars&&!o.broken)for(let i=0;i<3;i++){const x=sx+20+i*((W-40)/2),sw=Math.round(Math.sin(t*2.4+i)*3);R(x+sw,top+H+6+b,2,14,"#6d4b2c");R(x+sw-2,top+H+18+b,6,4,"#8e6a44")}
+  const mx=sx+W/2,mt=top-86;R(mx-2,mt+b,4,90,K);R(mx-1,mt+b,2,90,"#6d4b2c");
+  const sc=o.kind==="junk"?["#b9784a","#8c5530"]:["#efe3c6","#cdbf9d"];
+  if(o.sail===0){R(mx-26,mt+14+b,52,7,K);R(mx-25,mt+15+b,50,5,sc[0]);for(let x=mx-22;x<mx+24;x+=8)R(x,mt+15+b,1,5,sc[1])}
+  else{const sw=Math.round(Math.sin(t*2)*2),torn=o.sail===2;
+    for(let i=0;i<6;i++){const y=mt+8+i*9,ww=50-(o.kind==="junk"?i*2:0);if(torn&&(i===2||i===4))continue;R(mx-ww/2+sw*(i/6),y+b,ww,8,K);R(mx-ww/2+1+sw*(i/6),y+1+b,ww-2,6,sc[0]);R(mx-ww/2+1+sw*(i/6),y+6+b,ww-2,1,sc[1]);if(torn&&i===3)R(mx-6,y+1+b,10,6,"rgba(0,0,0,0)")}}
+  const a=G.wind==null?0:G.wind,fl=Math.sin(t*9)*0.25,fx=mx,fy=mt+b,dx=Math.cos(a+fl),dy=-Math.sin(a+fl);
+  ctx.fillStyle=o.kind==="jp"?"#efe3c6":"#b53a2c";ctx.beginPath();ctx.moveTo(fx,fy);ctx.lineTo(fx+dx*18-dy*3,fy+dy*18+dx*3);ctx.lineTo(fx-dy*7,fy+dx*7);ctx.closePath();ctx.fill();ctx.strokeStyle=K;ctx.lineWidth=1;ctx.stroke()};
+/* 멀리 지나가는 섬: 배가 나아가는 것처럼 천천히 뒤로 흘러간다 */
+OBJDRAW.islet=(o,sx,sy,t)=>{const span=G.map.w*16+240,wx=((o.x*16+(o.ph||0)-t*10)%span+span)%span-120,x=Math.round(wx-G.cam.x),y=sy,s=o.sz||1;
+  ctx.fillStyle="#e0cfa2";ctx.beginPath();ctx.ellipse(x,y+10,30*s,9*s,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#6f9a52";ctx.beginPath();ctx.ellipse(x-2,y+4,22*s,10*s,0,Math.PI,0);ctx.fill();
+  ctx.fillStyle="#5b5f66";ctx.beginPath();ctx.ellipse(x+12*s,y+6,9*s,7*s,0,Math.PI,0);ctx.fill();ctx.fillStyle="rgba(255,255,255,.55)";ctx.fillRect(x-30*s,y+16,60*s,1)};
+/* 물을 뿜는 돌고래 (본문 “돌고래가 물을 뿜고”) */
+OBJDRAW.dolphin=(o,sx,sy,t)=>{const q=((t*0.5+o.ph)%3)/3;if(q>0.4){if(q<0.5){ctx.fillStyle="rgba(255,255,255,.7)";for(let i=0;i<5;i++)ctx.fillRect(sx+4+i*2,sy+8-Math.random()*8,1,2)}return}
+  const k=q/0.4,x=sx-12+k*28,y=sy+10-Math.sin(Math.PI*k)*14;ctx.save();ctx.translate(x,y);ctx.rotate((k-0.5)*1.4);ctx.fillStyle="#1d1813";ctx.fillRect(-9,-3,18,6);ctx.fillStyle="#6f7f8f";ctx.fillRect(-8,-2,16,4);ctx.fillStyle="#9aaab8";ctx.fillRect(-6,1,10,1);ctx.fillStyle="#6f7f8f";ctx.fillRect(-2,-5,3,3);ctx.fillRect(-11,-3,3,6);ctx.restore();
+  if(k<0.25){ctx.fillStyle="rgba(255,255,255,.8)";for(let i=0;i<4;i++)ctx.fillRect(sx-6+i*3,sy+4-i*3-k*20,2,2)}};
+/* 풍랑: 빗줄기와 흰 물마루 */
+(()=>{const d0=drawParts;drawParts=function(t){d0(t);if(!G.storm)return;ctx.fillStyle="rgba(10,16,30,.25)";ctx.fillRect(0,0,VW,VH);
+  ctx.fillStyle="rgba(200,220,240,.55)";for(let i=0;i<70;i++){const x=(i*53+t*260)%(VW+40)-20,y=(i*97+t*520)%(VH+20)-10;ctx.fillRect(x,y,1,7)}
+  ctx.fillStyle="rgba(255,255,255,.6)";for(let i=0;i<26;i++){const x=((i*71-t*60)%(VW+80)+VW+80)%(VW+80)-40,y=(i*41)%VH,w=10+(i%5)*4,h=Math.sin(t*3+i)>0?2:1;ctx.fillRect(x,y,w,h)}}})();
 OBJDRAW.jpship=(o,sx,sy,t)=>{const b=Math.round(Math.sin(t*1.2+o.x));R(sx-30,sy+6+b,60,10,"#1d1813");R(sx-28,sy+7+b,56,7,"#5a3b22");R(sx-1,sy-30+b,2,37,"#3a2618");R(sx-14,sy-28+b,28,22,"#efe3c6")};
 OBJDRAW.junk=(o,sx,sy,t)=>{const b=Math.round(Math.sin(t*1.1+o.x));R(sx-30,sy+6+b,60,10,"#1d1813");R(sx-28,sy+7+b,56,7,"#7a5634");R(sx-1,sy-30+b,2,37,"#3a2618");for(let i=0;i<4;i++)R(sx-12+i,sy-28+i*6+b,24-i*2,5,"#b9784a")};
 OBJDRAW.kboat=(o,sx,sy,t)=>{const b=Math.round(Math.sin(t*1.3+o.x));R(sx-22,sy+6+b,44,8,"#1d1813");R(sx-20,sy+7+b,40,5,"#8e6a44");R(sx-1,sy-20+b,2,27,"#3a2618");R(sx-9,sy-18+b,18,16,"#e9dcb8")};
@@ -1835,7 +1873,7 @@ const ROUTES={
 var CHS={c:[],o:[]};
 function place(x,y,dir,look){Object.assign(G.player,{tx:x,ty:y,dir:dir||"d",moving:false,prog:0,look:look||G.player.look})}
 async function startChapter(route,n){
-  G.route=route;G.ch=n;G.f={};G.hist=[];G.zone=null;if(G.player){G.player.hold=null;G.player.down=0;G.player.mount=0;G.player.fade=null;G.player.cry=0}G.skills=[];G.partyAt=null;G.tileTask=null;G.pspeed=null;G.dream=false;G.busy=false;G.demo=false;G.night=false;G.snow=false;G.petals=false;G.lights=[];G.lock=false;G.money=0;G.purseOn=false;G.obj="";G.battle=null;G.face={};G.emo=[];G.rings=[];G.waves=false;G.tint=null;G.geese=null;G.bolt=null;G.dark=false;
+  G.route=route;G.ch=n;G.f={};G.hist=[];G.zone=null;if(G.player){G.player.hold=null;G.player.down=0;G.player.mount=0;G.player.fade=null;G.player.cry=0}G.skills=[];G.partyAt=null;G.tileTask=null;G.pspeed=null;G.dream=false;G.busy=false;G.demo=false;G.night=false;G.snow=false;G.petals=false;G.lights=[];G.lock=false;G.money=0;G.purseOn=false;G.obj="";G.battle=null;G.face={};G.emo=[];G.rings=[];G.waves=false;G.storm=false;G.wind=null;G.tint=null;G.geese=null;G.bolt=null;G.dark=false;
   PARTS.length=0;$("#hud").hidden=false;writeSave();
   const C=CHS[route][n];C.setup();updateHUD();setMood(C.mood||"study");
   await run(C.intro);
@@ -2214,8 +2252,8 @@ function tokensHTML(){const T=G.ex.tokens||[];return `<div class="stamps">${Obje
    경도·위도를 그대로 옮겨 그린 대략의 지도다(x=(경도-100)×16, y=(45-위도)×16). */
 const LL=(lon,lat)=>[Math.round((lon-100)*16),Math.round((45-lat)*16)];
 const PLACES={namwon:[...LL(127.4,35.4),"남원"],gurye:[...LL(127.6,35.15),"섬진강"],eunjin:[...LL(127.1,36.2),"은진"],suncheon:[...LL(127.5,34.95),"순천"],
-  sohung:[...LL(120.6,29.95),"소흥"],hangzhou:[...LL(120.15,30.3),"항주"],annam:[...LL(106.6,20.6),"안남"],nanggo:[...LL(129.9,32.75),"일본 낭고사"],minjeol:[...LL(119.6,26.1),"민·절 바닷길"],
-  yoyang:[...LL(123.2,41.3),"요양"],umisae:[...LL(124.6,41.9),"우미새"],island:[...LL(124.2,33.2),"외딴 섬"],shandong:[...LL(121,37),"산동"],seoul:[...LL(127,37.55),"서울"],ganghwa:[...LL(126.4,37.7),"강화도"],nanhai:[...LL(113.5,19.6),""],uiju:[...LL(124.4,40.1),""],gwanmun:[...LL(119.8,40.0),"국경의 관문"],najoo:[...LL(126.7,35.0),"나주 회진"]};
+  sohung:[...LL(120.6,29.95),"소흥"],hangzhou:[...LL(120.15,30.3),"항주"],annam:[...LL(106.6,20.6),"안남"],nanggo:[...LL(132.2,34.6),"일본(돈우의 집)"],minjeol:[...LL(119.6,26.1),"민·절 바닷길"],
+  yoyang:[...LL(123.2,41.3),"요양"],umisae:[...LL(125.5,43),"오랑캐 땅 우미새"],island:[...LL(124.2,33.2),"외딴 섬"],seoul:[...LL(127,37.55),"서울"],ganghwa:[...LL(126.4,37.7),"강화도"],nanhai:[...LL(113.5,19.6),""],najoo:[...LL(126.7,35.0),"나주 회진"]};
 const COAST=[
   [[100,45],[130,45],[130,42.6],[128.3,42],[126.8,41.7],[125.3,40.6],[124.3,39.9],[122.3,40.6],[121,39],[121.6,38.8],[121.4,40],[120,40.3],[118.5,39.1],[118,38.3],[119,37.2],[122.5,37.3],[120.3,36],[119.2,35],[120.8,32.2],[121.9,31.1],[121.9,30],[121.5,28.5],[120,26.5],[119.5,25.4],[117,23.5],[114,22.3],[111,21.5],[110,20.3],[109.7,21.5],[108,21.6],[106.7,20.7],[106,19.5],[105.8,18],[100,18]],
   [[124.3,39.9],[125.2,39.5],[124.7,38.1],[126.1,37.7],[126.6,37],[126.1,36.5],[126.5,35],[126.3,34.5],[127.5,34.6],[128.5,34.9],[129.3,35.3],[129.6,36.1],[129.4,37],[128.6,38.3],[127.5,39.5],[128.3,40],[129.7,40.9],[129.9,42.4],[128.3,42],[126.8,41.7],[125.3,40.6]],
@@ -2225,20 +2263,20 @@ const COAST=[
 const LANDS=COAST.map(p=>`<path d="M${p.map(q=>LL(q[0],q[1]).join(" ")).join(" L")} Z" fill="#ece3c8" stroke="#bfae86" stroke-width="1"/>`).join("");
 const REGION=[["명나라",230,170],["조선",420,105],["일본",505,250],["오랑캐 땅(후금)",300,24],["안남",70,380],["바다",400,300]].map(([t,x,y])=>`<text x="${x}" y="${y}" font-size="13" fill="#a3916b" text-anchor="middle" letter-spacing="2">${t}</text>`).join("");
 function mapSVG(inner,aria){return `<svg class="relg emap" viewBox="0 0 560 432" role="img" aria-label="${esc(aria||"동아시아 지도")}" font-family="IBM Plex Sans KR,sans-serif"><rect width="560" height="432" fill="#d7e6ec"/>${LANDS}${REGION}${inner}</svg>`}
-const LABOFF={gurye:[-6,13],suncheon:[5,14],namwon:[8,-2],eunjin:[7,-5],ganghwa:[-7,-6],najoo:[-7,4],seoul:[7,-7],hangzhou:[-7,-6],sohung:[7,9],yoyang:[-7,-6],umisae:[7,-6],gwanmun:[-7,-6]};
+const LABOFF={gurye:[-6,13],suncheon:[5,14],namwon:[8,-2],eunjin:[7,-5],ganghwa:[-7,-6],najoo:[-7,4],seoul:[7,-7],hangzhou:[-7,-6],sohung:[7,9],yoyang:[-7,-6],umisae:[7,-6]};
 function placeDot(k,opt){opt=opt||{};const [x,y,n]=PLACES[k];if(!n)return "";const o=LABOFF[k]||[opt.left?-7:7,-6];opt.left=o[0]<0;return `<circle cx="${x}" cy="${y}" r="${opt.big?5.5:3.6}" fill="${opt.c||"#1d1813"}"${opt.big?' stroke="#fff3a0" stroke-width="2"':""}/><text x="${x+o[0]}" y="${y+o[1]}" font-size="${opt.big?13:11.5}" font-weight="${opt.big?700:400}" fill="#3a2f22" text-anchor="${opt.left?"end":"start"}" stroke="#f7f2e4" stroke-width="3" paint-order="stroke">${n}</text>`}
 const LEFTLAB=new Set(["gurye","suncheon","hangzhou","minjeol","seoul","ganghwa","najoo"]);
 
 /* 두 사람의 길: 장을 마칠 때마다 이어 그린다 */
-const RPATH={c:[[1,["namwon"]],[3,["gurye","namwon","uiju","gwanmun","sohung"]],[4,["hangzhou","minjeol","nanhai","annam","nanhai","minjeol","hangzhou"]],[5,["yoyang","umisae","eunjin"]],[6,["namwon"]]],
-  o:[[1,["seoul","ganghwa","najoo","namwon"]],[3,["gurye","nanggo","minjeol"]],[4,["nanhai","annam","nanhai","minjeol","hangzhou"]],[6,["shandong","island","suncheon","namwon"]]]};
+const RPATH={c:[[1,["namwon"]],[3,["gurye","namwon","sohung"]],[4,["hangzhou","minjeol","nanhai","annam","nanhai","minjeol","hangzhou"]],[5,["yoyang","umisae","eunjin"]],[6,["namwon"]]],
+  o:[[1,["seoul","ganghwa","najoo","namwon"]],[3,["gurye","nanggo","minjeol"]],[4,["nanhai","annam","nanhai","minjeol","hangzhou"]],[6,["island","suncheon","namwon"]]]};
 const RCOL={c:"#2b4a6f",o:"#b3362b"},ROFF={c:-2,o:2};
 function routePts(r,all){const d=G.ex.done;const out=[];for(const [ch,ps] of RPATH[r]){if(!all&&(d[r]||0)<ch&&!(G.route===r&&G.ch>=ch))break;out.push(...ps)}return out}
 function routeLine(r,p){if(p.length<2)return "";return `<polyline points="${p.map(k=>(PLACES[k][0]+ROFF[r])+","+(PLACES[k][1]+ROFF[r])).join(" ")}" fill="none" stroke="${RCOL[r]}" stroke-width="2.6" stroke-dasharray="${r==="o"?"7 4":""}" stroke-linejoin="round" opacity=".85"/>`}
 function routeMapHTML(all){const pc=routePts("c",all),po=routePts("o",all),seen=new Set([...pc,...po]);if(G.here)seen.add(G.here);
   const dots=[...seen].map(k=>placeDot(k,{left:LEFTLAB.has(k),big:k===G.here&&!all})).join("");
   return mapSVG(routeLine("c",pc)+routeLine("o",po)+dots+`<g font-size="12"><rect x="372" y="396" width="180" height="28" fill="#f7f2e4" opacity=".85"/><line x1="380" y1="410" x2="408" y2="410" stroke="${RCOL.c}" stroke-width="2.6"/><text x="413" y="414" fill="#3a2f22">최척</text><line x1="456" y1="410" x2="484" y2="410" stroke="${RCOL.o}" stroke-width="2.6" stroke-dasharray="7 4"/><text x="489" y="414" fill="#3a2f22">옥영</text></g>`,"두 사람이 지나온 길")
-    +`<p class="note">${all?"두 사람이 지나온 길이에요.":"장을 마칠 때마다 길이 이어져요. 큰 점이 지금 있는 곳이에요."} 땅 모양과 위치는 대략 그린 것이에요.</p>`}
+    +`<p class="note">${all?"두 사람이 지나온 길이에요.":"장을 마칠 때마다 길이 이어져요. 큰 점이 지금 있는 곳이에요."} 땅 모양과 위치는 대략 그린 것이고, 선은 지나간 곳을 이은 것이라 실제로 간 길과 다를 수 있어요.</p>`}
 
 /* 지금 있는 곳 */
 function here(k){G.here=k;const b=$("#bWorld");if(b){b.classList.remove("ping");void b.offsetWidth;b.classList.add("ping")}}
@@ -2264,7 +2302,7 @@ function travel(r,via,title,body){const pts=via.map(k=>PLACES[k]);G.here=via[via
 (()=>{const st=document.createElement("style");st.textContent=".emap{background:#d7e6ec}";document.head.appendChild(st);
   const hb=document.querySelector(".hbtns");if(!hb)return;const b=document.createElement("button");b.className="hb";b.id="bWorld";b.textContent="지도";hb.insertBefore(b,hb.firstChild.nextSibling);
   b.onclick=()=>openPanel(`<span class="eb">지도</span><h2>지금 어디에 있나</h2><p class="note">이 이야기는 조선, 일본, 명나라, 안남, 오랑캐 땅을 오가요. 파란 실선이 최척, 붉은 점선이 옥영이 지나온 길이에요.</p>${routeMapHTML()}
-    <h3>이야기에 나오는 곳</h3><div class="list">${[["남원","최척의 고향. 만복사, 금교, 서문 밖 옛집이 있다."],["연곡사·섬진강","정유재란 때 피난한 지리산의 절과, 왜적이 사람들을 끌고 간 강."],["소흥·항주","최척이 여유문을 따라가 살고, 주우를 만나고, 아내와 다시 살림을 차린 명나라 고을."],["일본 낭고사","옥영을 데려간 돈우의 집이 있던 곳."],["민·절","돈우의 배가 장사하러 오간 명나라 남쪽 바닷가(복건·절강)."],["안남","지금의 베트남 땅. 부부가 다시 만난 강 어구."],["요양·우미새","명나라 군대가 오랑캐(후금)와 싸워 크게 진 곳."],["은진","돌아오던 최척이 등창으로 쓰러진 곳."],["외딴 섬·순천","바다를 건너던 옥영 일행이 갇혔다가 조선 배를 만나 내린 곳."]].map(([n,d])=>`<div class="item"><div class="t">${n}</div><div class="d">${d}</div></div>`).join("")}</div>`)})();
+    <h3>이야기에 나오는 곳</h3><div class="list">${[["남원","최척의 고향. 만복사, 금교, 서문 밖 옛집이 있다."],["연곡사·섬진강","정유재란 때 피난한 지리산의 절과, 왜적이 사람들을 끌고 간 강."],["소흥·항주","최척이 여유문을 따라가 살고, 주우를 만나고, 아내와 다시 살림을 차린 명나라 고을."],["일본(돈우의 집)","옥영을 데려간 돈우의 집이 있던 곳. 본문에는 ‘낭고사’라고 나오는데, 지금의 어디인지 확실하지 않아 일본 땅에 대략 찍었어요."],["민·절","돈우의 배가 장사하러 오간 명나라 남쪽 바닷가(복건·절강)."],["안남","지금의 베트남 땅. 부부가 다시 만난 강 어구."],["요양·우미새","명나라 군대가 요양에서 오랑캐 땅으로 수백 리 들어가 진을 쳤다가 크게 진 곳. 우미새의 자리는 대략 찍었어요."],["은진","돌아오던 최척이 등창으로 쓰러진 곳."],["외딴 섬·순천","바다를 건너던 옥영 일행이 갇혔다가 조선 배를 만나 내린 곳."]].map(([n,d])=>`<div class="item"><div class="t">${n}</div><div class="d">${d}</div></div>`).join("")}</div>`)})();
 
 /* ═════════ 어려운 낱말 풀이: 본문 대사 아래에 짧은 뜻을 붙이고, 만난 낱말은 ‘낱말첩’에 모인다 ═════════
    뜻풀이는 게임을 위해 붙인 것이다(사전 뜻을 이 대목에 맞게 줄임). 한 줄에 너무 많이 붙지 않게, 처음 보는 낱말을 먼저 네 개까지만 보여 준다. */
@@ -2970,7 +3008,7 @@ async function c3Yeo(){
   await must("choiy","식구도 집도 잃었다. 말이 조금 통하는 이 장수에게 무엇을 청할까?",["남원에 남아 식구를 찾겠다고 한다","함께 중국으로 들어가 목숨이나 부지하게 해 달라고 호소한다"],1,"본문의 최척은 한 몸 의탁할 곳이 없어, 함께 중국으로 들어가게 해 달라고 호소해요.");
   await S([...nn("그래서 최척은 그 장수에게 자기 집안이 전몰하게 된 사실을 이야기하고, 또 자기 한 몸마저 의탁할 곳이 없어 함께 중국으로 들어가 목숨이나 부지했으면 좋겠다고 호소하였다.","당나라 장수는 최척의 말을 듣고 슬퍼하였으며, 또 최척의 뜻을 불쌍하게 여겨 말했다."),...qq("yeo","여유문","나는 오총병에 속해 있는 천총인 여유문이오.","집은 절강성 소흥부에 있으며, 재산은 비록 넉넉지 않으나 먹고살기에는 부족함이 없소.","인생이란 서로의 마음을 알아주는 것이 소중하니, 가고 아니 가고는 그대의 뜻대로 하시오.","게다가 나는 이미 집안 일에 연연하지 않고 장차 멀리 유람할 계획을 갖고 있소.","그런데 어찌 반드시 홀로 한 가지 방책만 고수하여 소심하게 그대의 뜻을 받아들이지 못하겠소.")]);meet("yeo");trait("kind");
   await S([...nn("마침내 최척은 말 한 필을 얻어 타고 당나라 진중으로 들어갔다.","최척은 용모가 준수하고 지략이 심원하였으며, 활쏘기와 말타기를 잘하고 한문도 잘 알고 있었다.","그래서 여공은 최척을 매우 아껴 같은 막사에서 식사를 하고 잠도 같이 잤다.","얼마 뒤 총병이 병사들을 철수하여 중국으로 돌아감에, 최척은 전투와 삼군의 장부를 담당하는 임무를 맡아 국경의 관문을 통과하여 소흥부에서 살았다.")]);trait("world");stage(1);
-  await travel("c",["namwon","uiju","gwanmun","sohung"],"남원에서 명나라 소흥으로","최척은 명나라 군대를 따라 국경의 관문을 지나 절강성 소흥부에서 살게 되었다.");
+  await travel("c",["namwon","sohung"],"남원에서 명나라 소흥으로","최척은 명나라 군대를 따라 국경의 관문을 지나 절강성 소흥부에서 살게 되었다.");
   /* 최척이 모르는 일 */
   await meanwhile("섬진강 가의 갈대숲","최척이 모르는 일","최척이 떠난 뒤, 끌려가던 식구들에게는 무슨 일이 있었을까?");
   const m=buildMount();await cutTo(m,async()=>{setMood("grief");G.tint=null;
@@ -3131,7 +3169,7 @@ async function c6Home(){
   await S([...nn("최척이 갑자기 그의 손을 잡고 말했다."),...qq("C",0,"괴이하도다!","괴이하도다!","내가 항주에서 당신의 집과 이웃해서 살았었습니다.","당신의 처는 신해년 9월에 병으로 죽고 홍도만 혼자 남게 되었는데, 홍도는 이모부인 오봉림의 집에서 길러져 내가 둘째 며느리로 삼았습니다.","그런데 뜻밖에도 오늘 여기에서 당신을 만나게 되었으니, 참으로 기이한 일입니다."),...nn("위경이 이 말을 듣더니 그의 가족들을 본 것처럼 기뻐하였다.","그러면서도 한편으로는 슬픔에 젖어 한바탕 통곡을 하고 말했다.")]);wg.name="진위경";meet("wigyeong");
   await S([...qq("wigyeong","진위경","나는 영남 대구에서 박씨 성을 가진 사람의 집에 의탁해 침술로 생계를 유지해 왔습니다.","이제 당신과 이미 사돈간이 되었으니 내가 이곳으로 옮겨와 서로 의지해 사는 것이 어떻겠습니까?"),...nn("몽석이 말했다."),...qq("mongseok",0,"공께서는 저의 아버지를 살려주신 은혜가 있을 뿐만 아니라 또한 절친한 인척이기도 합니다.","게다가 제 어머님과 동생이 공의 따님께 의탁해 이미 한 가족을 이루었으니, 여기서 함께 사는 일을 다시 말해 무엇하겠습니까?"),...nn("그리고 즉시 위경으로 하여금 이사를 해서 바로 이웃에 살게 하였다.","몽석은 어머니가 살아 계시다는 말을 들은 뒤부터는 밤낮 중국으로 들어가서 어머니와 동생을 데려 오려고 하였다.","그래서 아내와 함께 이리저리 고심을 했으나 뾰족한 방법이 없어 떠나지 못하고 있었다.")]);trait("chance");
   await card("그 사이 바다 위에서는","옥영의 뱃길","옥영은 최척이 싸움터에서 죽은 줄 알고, 몽선·홍도와 함께 배를 사서 조선으로 떠났다. 풍랑과 해적을 만나 외딴 섬에 갇혔다가 조선 배를 만나 순천에 내렸다. (이 대목의 본문은 옥영 편 5~6장에서 읽을 수 있어요.)");
-  await travel("o",["hangzhou","shandong","island","suncheon","namwon"],"옥영의 뱃길","항주를 떠난 배는 풍랑과 해적을 만나고, 외딴 섬을 거쳐 순천에 닿았다.");
+  await travel("o",["hangzhou","island","suncheon","namwon"],"옥영의 뱃길","항주를 떠난 배는 풍랑과 해적을 만나고, 외딴 섬을 거쳐 순천에 닿았다.");
   /* 수양버들 아래 */
   G.f.wait=1;place(17,9,"d");const sk=N("suk");sk.tx=18;sk.ty=9;sk.dir="d";for(const n of [ms,wg])n.show=()=>G.f.all;sim.show=()=>G.f.all;
   setMood("meet");
@@ -3303,8 +3341,8 @@ CHS.o[3]={mood:"war",
     tip("옥영은 아들 몽석이 살아 있는 줄 몰라요. 지금은 읽는 우리만 알아요.");
     G.tint=null;
     await travel("o",["gurye","nanggo"],"섬진강에서 일본으로","옥영은 왜병의 배에 실려 바다 건너 일본으로 끌려갔다.");
-    const d=buildDeck({kind:"jp",dw:12,dh:4});G.map=d;setMood("ship");G.waves=true;place(13,7,"d");holdSet(me(),null);
-    const donu=npc("donu","donu","왜병",17,8,"l",null,{fixed:1});d.npcs.push(donu,npc("j1","jpsailor","",11,9,"r",null,{fixed:1}));
+    const d=buildDeck({kind:"jp",dw:12,dh:4,isles:1,oars:1});G.map=d;setMood("ship");G.waves=true;place(d.deck.x0+4,d.deck.y0+1,"d");holdSet(me(),null);
+    const donu=npc("donu","donu","왜병",d.deck.x0+8,d.deck.y0+2,"l",null,{fixed:1});d.npcs.push(donu,npc("j1","jpsailor","",d.deck.x0+1,d.deck.y0+3,"r",null,{fixed:1}));
     await S([...nn("이때 옥영은 왜병인 돈우에게 붙들렸는데, 돈우는 인자한 사람으로 살생을 좋아하지 않았다.","그는 본래 부처님을 섬기면서 장사를 업으로 삼고 있었으나, 배를 잘 저었기 때문에 왜장인 평행장이 뱃사공의 우두머리로 삼아 데려왔던 것이다.")]);meet("donu");
     await S([...nn("돈우는 옥영의 영특한 면모를 사랑하였다.","옥영이 붙들린 채 두려움에 떠는 것을 보고 좋은 옷을 입히고 맛있는 음식을 먹이면서 옥영의 마음을 달래었다.","그러나 옥영이 여자인 줄은 끝내 몰랐다.")]);donu.name="돈우";trait("kind");
     await S([...nn("옥영은 물에 빠져 죽으려고 두세 번 바다에 뛰어 들었으나, 사람들이 번번이 구출해서 결국 죽지 못하고 말았다.","어느 날 저녁이었다.","옥영의 꿈에 장육금불이 나타나 분명하게 말했다.")]);
@@ -3404,33 +3442,38 @@ CHS.o[5]={mood:"china",
 
 /* 제6장 바다를 건너 남원으로 */
 CHS.o[6]={mood:"sea",
-  setup(){const m=buildDeck({kind:"kr",dw:8,dh:3});G.map=m;G.cl="choio";G.ol="okc";G.waves=true;place(13,7,"u","okc");here("hangzhou");
-    m.npcs.push(npc("mo","mongseon","몽선",15,7,"u",null,{fixed:1,hold:"oar"}),npc("hd","hongdo","홍도",14,8,"u",null,{fixed:1}))},
+  setup(){const m=buildDeck({kind:"kr",dw:12,dh:4,shore:1,sail:0,oars:1});G.map=m;G.cl="choio";G.ol="okc";G.waves=true;G.wind=0;const d=m.deck;place(d.x0+4,d.y0+1,"u","okc");here("hangzhou");
+    m.npcs.push(npc("mo","mongseon","몽선",d.x0+8,d.y0+2,"u",null,{fixed:1,hold:"oar"}),npc("hd","hongdo","홍도",d.x0+6,d.y0+2,"u",null,{fixed:1}),npc("v1","cnman","",5,4,"d",null,{wander:2}),npc("v2","cnman","",28,6,"l",null,{wander:2}))},
   async intro(){
     await card("제6장","바다를 건너 남원으로","경신년 2월 초하루, 닻을 올린다.");
     await S([...nn("출발할 날짜가 결정되자, 옥영이 아들에게 말했다."),...qq("O",0,"조선은 동북쪽에 있기 때문에 반드시 남서풍을 기다려야만 한다.","너는 모름지기 앉아서 노를 단단히 잡고 오직 나의 지시만을 따르도록 해라."),...nn("드디어 깃대에 깃발을 달고 자석을 뱃전에다 설치하였다.","배 안을 점검해 보니 모든 것이 다 잘 갖추어져 있었다.")]);holdSet(me(),"compass");
     await windGame();
-    await S([...nn("돌고래가 물을 뿜고 바다 상어가 파도를 일으켰으며, 바람이 공중에서 일어나더니 깃발이 북쪽을 향해 펄럭였다.","세 사람이 힘을 다해 돛을 올리자, 배가 밤낮없이 파도를 가로지르며 질주하였다.")]);G.shake=2;sfx("wind");
+    G.wind=Math.PI/2;
+    await S([...nn("돌고래가 물을 뿜고 바다 상어가 파도를 일으켰으며, 바람이 공중에서 일어나더니 깃발이 북쪽을 향해 펄럭였다.")]);obj("deck").sail=1;sfx("wind");
+    await S([...nn("세 사람이 힘을 다해 돛을 올리자, 배가 밤낮없이 파도를 가로지르며 질주하였다.")]);G.shake=2;
+    /* 넓은 바다로 */
+    {const m=buildDeck({kind:"kr",dw:12,dh:4,isles:1,dolphins:1,oars:1});G.map=m;const d=m.deck;place(d.x0+4,d.y0+1,"u");setMood("sea");
+      m.npcs.push(npc("mo","mongseon","몽선",d.x0+8,d.y0+2,"u",null,{fixed:1,hold:"oar"}),npc("hd","hongdo","홍도",d.x0+6,d.y0+2,"u",null,{fixed:1}))}
     await S([...nn("벽력같은 화살이 풍랑 속으로 들어가고 번개가 날듯이 순식간에 내주에 올랐다.","얼마 뒤 푸른 망망대해에 떠 있는 섬들이 나타나더니 눈을 놀리는 순간 사라져 갔다.")]);
-    await travel("o",["hangzhou","shandong"],"항주를 떠나","배는 밤낮없이 파도를 가로질렀다. 어느 날 중국 배를, 며칠 뒤에는 일본 배를 만났다.");
-    const cn=npc("cn","cnman","중국 뱃사람",10,5,"d",null,{fixed:1});G.map.npcs.push(cn);
+    const cn=sideShip("junk","cnman","중국 뱃사람");
     await S([...nn("하루는 중국인 배를 만나게 되었는데, 그들이 물었다."),...qq("cnman",0,"어느 지방의 배이며, 어디로 가느냐?")]);
     await quiz("okc","중국 배가 묻는다. 무엇이라고 대답할까?",["조선 사람인데 고향으로 간다","항주 사람인데 차를 사러 산동으로 간다","일본 사람인데 표류했다"],1,"중국 배에는 중국 사람인 척해야 의심을 사지 않아요. 옥영이 사는 곳은 항주예요.");
-    await S([...nn("옥영이 응답하여 말했다."),...qq("O",0,"나는 항주 사람인데 차를 사기 위해 산동으로 가는 중입니다.")]);await vanish(cn);
+    await S([...nn("옥영이 응답하여 말했다."),...qq("O",0,"나는 항주 사람인데 차를 사기 위해 산동으로 가는 중입니다.")]);sideGone();
     await S([...nn("또 며칠 뒤에는 일본인 배를 만나게 되었다.")]);
     await dressUp({eb:"옷 갈아입기",title:"일본 배가 다가온다",desc:"옥영은 조선과 일본 두 나라의 옷을 지어 두었다. 일본 배 앞에서는 무엇으로 갈아입을까요?",items:[["조선 옷",0],["일본 옷",1],["명나라 옷",0]],fail:"일본 배에는 일본 사람인 척해야 해요.",ok:"갈아입기"});
     G.ol="okj";me().look="okj";
     await S([...nn("옥영은 즉시 아들, 며느리와 함께 일본인 옷으로 갈아입고 기다렸다.")]);
-    const jp=npc("jp","jpsailor","일본 뱃사람",10,5,"d",null,{fixed:1});G.map.npcs.push(jp);
-    await S([...nn("일본인 배가 다가와서 물었다."),...qq("jpsailor",0,"너희들은 어느 지방 사람이며, 어디에서 오는 중이냐?"),...nn("옥영이 일본어로 대답하였다."),...qq("O",0,"고기를 잡으러 바다로 들어왔다가 풍랑을 만나 표류하게 되었습니다.","배와 노가 깨지고 부러져 항주에서 배를 사서 돌아가는 중입니다."),...nn("일본 사람이 말했다."),...qq("jpsailor",0,"고생을 많이 했군요!","고생을 많이 했군요!","여기서 일본까지는 얼마 안되니 남쪽으로 가십시오.")]);await vanish(jp);
+    sideShip("jp","jpsailor","일본 뱃사람");
+    await S([...nn("일본인 배가 다가와서 물었다."),...qq("jpsailor",0,"너희들은 어느 지방 사람이며, 어디에서 오는 중이냐?"),...nn("옥영이 일본어로 대답하였다."),...qq("O",0,"고기를 잡으러 바다로 들어왔다가 풍랑을 만나 표류하게 되었습니다.","배와 노가 깨지고 부러져 항주에서 배를 사서 돌아가는 중입니다."),...nn("일본 사람이 말했다."),...qq("jpsailor",0,"고생을 많이 했군요!","고생을 많이 했군요!","여기서 일본까지는 얼마 안되니 남쪽으로 가십시오.")]);sideGone();
     /* 풍랑 */
-    G.night=true;setMood("storm");sfx("thunder");G.flash=0.6;G.shake=8;
-    await S([...nn("이날 남풍이 심하게 불었다.","해가 이윽고 서쪽 바다 속으로 들어가자, 흰 이무기는 풍랑을 일으키고 푸른 파도는 하늘이 놀랄 정도로 치솟아 올랐다.","구름과 안개가 사방에 가득 끼어 지척도 분간하기 어려웠으며, 노는 부러지고 돛은 찢어져 어디로 가야 할 지 알 수가 없었다.")]);bolt(me());
+    G.wind=Math.PI;await S([...nn("이날 남풍이 심하게 불었다.")]);
+    G.night=true;G.storm=true;setMood("storm");sfx("thunder");G.flash=0.6;G.shake=8;G.map.objs=G.map.objs.filter(o=>o.k!=="dolphin"&&o.k!=="islet");
+    await S([...nn("해가 이윽고 서쪽 바다 속으로 들어가자, 흰 이무기는 풍랑을 일으키고 푸른 파도는 하늘이 놀랄 정도로 치솟아 올랐다.","구름과 안개가 사방에 가득 끼어 지척도 분간하기 어려웠으며, 노는 부러지고 돛은 찢어져 어디로 가야 할 지 알 수가 없었다.")]);bolt(me());const dk=obj("deck");dk.sail=2;dk.broken=1;holdSet(N("mo"),null);
     N("mo").down=1;N("hd").down=1;holdSet(N("mo"),null);
     await S([...nn("몽선 부부는 깜짝 놀라서 뱃바닥에 엎드리더니 이내 배멀미를 하였다.")]);
     await must("okj","노는 부러지고 돛은 찢어졌다. 아들 내외는 뱃바닥에 엎드렸다.",["함께 엎드려 운다","의연하게 홀로 앉아 하늘을 우러르며 기도한다"],1,"본문의 옥영은 의연하게 홀로 앉아 말없이 기도해요.");
-    await S([...nn("옥영은 의연하게 홀로 앉아 하늘을 우러르며 말없이 기도하였다.","밤이 되면서 풍랑이 잦아들더니 배가 흘러서 조그만 섬에 이르렀다.")]);G.night=false;G.shake=0;N("mo").down=0;N("hd").down=0;
-    await travel("o",["shandong","island"],"풍랑에 밀려","밤이 되면서 풍랑이 잦아들고, 배가 흘러 작은 섬에 이르렀다.");
+    await S([...nn("옥영은 의연하게 홀로 앉아 하늘을 우러르며 말없이 기도하였다.","밤이 되면서 풍랑이 잦아들더니 배가 흘러서 조그만 섬에 이르렀다.")]);G.night=false;G.storm=false;G.shake=0;N("mo").down=0;N("hd").down=0;
+    await travel("o",["hangzhou","island"],"항주에서 바다로","밤이 되면서 풍랑이 잦아들고, 배가 흘러 작은 섬에 이르렀다.");
     const isl=buildIsland();G.map=isl;setMood("island");place(18,17,"u");holdSet(me(),"sack");const F=G.f;
     isl.npcs.push(npc("mo","mongseon","몽선",17,17,"u",null,{fixed:1}),npc("hd","hongdo","홍도",19,17,"u",null,{fixed:1}));here("island");
     await S([...nn("배를 수리하기 위해 며칠 머물러 있는데, 홀연히 바다 가운데서 배 한 척이 점차 다가왔다.")]);
@@ -3441,7 +3484,7 @@ function windGame(){if(LITE())return Promise.resolve();return new Promise(res=>{
   const v=gmOpen(`<span class="eb">바람 기다리기</span><h2>남서풍이 불 때 돛을 올리자</h2><p class="note">조선은 동북쪽에 있어서 남서풍을 기다려야 해요. 남서쪽에서 바람이 불면 깃발은 북쪽(↑)으로 펄럭여요. 그때 돛을 올리세요(Space · E · 단추).</p>
     <div class="big" id="wd" style="font-size:64px">→</div><div class="st" id="ws">깃발이 동쪽으로 펄럭인다</div><div class="row"><button class="btn pri pressb" data-press>돛 올리기</button></div>`);
   const wd=v.querySelector("#wd"),ws=v.querySelector("#ws"),box=v.firstElementChild;
-  const tick=()=>{if(!alive)return;k=(k+1+Math.floor(Math.random()*2))%D.length;if(tries>=2&&Math.random()<0.5)k=3;wd.textContent=D[k][0];ws.textContent="깃발이 "+D[k][1]+" 펄럭인다";v.dataset.hot=k===3?"1":"";sfx("wind");setTimeout(tick,1300)};
+  const tick=()=>{if(!alive)return;k=(k+1+Math.floor(Math.random()*2))%D.length;if(tries>=2&&Math.random()<0.5)k=3;wd.textContent=D[k][0];ws.textContent="깃발이 "+D[k][1]+" 펄럭인다";G.wind=[0,-Math.PI/2,Math.PI,Math.PI/2,-Math.PI/4,Math.PI/4][k];v.dataset.hot=k===3?"1":"";sfx("wind");setTimeout(tick,1300)};
   const press=()=>{if(!alive)return;if(k===3){alive=false;sfx("correct");ws.textContent="남서풍이다! 세 사람이 힘을 다해 돛을 올린다";v.dataset.hot="";setTimeout(()=>{gmClose(v);res()},900)}else{tries++;sfx("wrong");shk(box);miss("바람 기다리기");ws.textContent="지금은 아니에요. 깃발이 북쪽(↑)을 가리킬 때예요"}};
   v.addEventListener("click",e=>{if(e.target.closest("[data-press]"))press()});UI.onKey=e=>{if(["Space","KeyE","Enter"].includes(e.code))press();return true};setTimeout(tick,900)})}
 async function o6Hide(mo){
