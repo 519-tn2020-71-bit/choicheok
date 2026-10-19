@@ -576,8 +576,9 @@ function sprite(lookKey,dir,f,blink){
 /* ═════════ 그림 아바타 (앞·옆·뒤 3방향 시트) ═════════ */
 const AVA_OF={choiy:"a_choiy",choim:"a_choim",choio:"a_choio",oky:"a_oky",okw:"a_okw",okm:"a_okm",okc:"a_okc",okj:"a_okj",okk:"a_okk",suk:"a_suk",sim:"a_sim",jeong:"a_jeong",chunsaeng:"a_chunsaeng",uib:"a_uib",
   yeo:"a_yeo",juu:"a_juu",duhong:"a_duhong",donu:"a_donu",mongseok:"a_mongseok",mongseon:"a_mongseon",hongdo:"a_hongdo",oldbarb:"a_oldbarb",jurchen:"a_jurchen",mingsol:"a_mingsol",wigyeong:"a_wigyeong",
-  pirate:"a_pirate",jpsailor:"a_jpsailor",cnman:"a_cnman",wae:"a_wae",villager:"a_villager",woman:"a_woman2",maid:"a_maid",monk:"a_monk",sagong:"a_sagong",yeokjol:"a_yeokjol",horse:"a_horse"};
-const AVA_H={};
+  pirate:"a_pirate",jpsailor:"a_jpsailor",cnman:"a_cnman",wae:"a_wae",oldman:"a_oldman",oldwoman:"a_oldwoman",villager:"a_villager",woman:"a_woman2",maid:"a_maid",monk:"a_monk",sagong:"a_sagong",yeokjol:"a_yeokjol",horse:"a_horse"};
+/* 모자·창·지팡이처럼 머리 위로 솟은 것이 있는 그림은 그만큼 키를 키워, 몸 크기가 다른 인물과 같아 보이게 한다(교사 의견 2026-10-19) */
+const AVA_H={a_choiy:44,a_jeong:44,a_suk:41,a_uib:42,a_wae:46,a_mingsol:52,a_villager:43,a_sagong:47,a_monk:48,a_cnman:43,a_yeo:41,a_mongseok:44,a_choim:41,a_oldbarb:41,a_jurchen:41,a_yeokjol:41};
 const AV={};
 function keyOut(a,W,H,bg){
   const near=i=>Math.abs(a[i]-bg[0])+Math.abs(a[i+1]-bg[1])+Math.abs(a[i+2]-bg[2]);
@@ -643,7 +644,7 @@ function drawAvatar(e,v,sx,sy,t){
   ctx.restore();
   return by+bob-h;
 }
-const SKIRT=new Set(["a_oky","a_okw","a_okc","a_okj","a_okk","a_sim","a_chunsaeng","a_hongdo","a_woman2","a_maid"]);
+const SKIRT=new Set(["a_oky","a_okw","a_okc","a_okj","a_okk","a_sim","a_chunsaeng","a_hongdo","a_oldwoman","a_woman2","a_maid"]);
 
 /* ═════════ 소품 그림 ═════════ */
 const PROP_W={o_cauldron:36,o_mill:46,o_cave:74,o_scarecrow:22,o_tent:58,o_stele:26,o_tomb:46,o_altar:26,o_choga:82,o_giwa:108,o_giwa_s:88,o_hall:150,o_gate:120,o_stall_food:58,o_stall_silk:58,o_stall_brass:58,o_well:30,o_jars:40,o_pyeong:38,o_hyeong:42,o_tree:44,o_pine:46,o_horses:74,o_desk:40,o_lantern:22};
@@ -1030,7 +1031,7 @@ requestAnimationFrame(loop);
 const UI={modal:false,onKey:null,panel:false};
 const PORT={choiy:"p_choi",choim:"p_choi2",choio:"p_choi3",oky:"p_ok",okw:"p_okw",okm:"p_okm",okc:"p_okc",okj:"p_okc",okk:"p_okc",suk:"p_suk",sim:"p_sim",jeong:"p_jeong",chunsaeng:"p_chunsaeng",donu:"p_donu",yeo:"p_yeo",juu:"p_juu",mongseok:"p_mongseok",mongseon:"p_mongseon",hongdo:"p_hongdo",oldbarb:"p_oldbarb",wigyeong:"p_wigyeong"};
 const portHTML=who=>PORT[who]?`<img class="port" src="art/${(G.face&&G.face[who])||PORT[who]}.jpg" alt="" onerror="this.parentNode.classList.remove('hasp');this.remove()">`:"";
-const NAMES={narr:"",choiy:"최척",choim:"최척",choio:"최척",oky:"옥영",okw:"옥영",okm:"옥영",okc:"옥영",okj:"옥영",okk:"옥영",suk:"최숙",sim:"심씨",jeong:"정상사",chunsaeng:"춘생",uib:"의병장",yeo:"여유문",juu:"주우",duhong:"두홍",donu:"돈우",mongseok:"몽석",mongseon:"몽선",hongdo:"홍도",oldbarb:"늙은 오랑캐",jurchen:"오랑캐 병사",mingsol:"명나라 병사",wigyeong:"중국 사람",pirate:"해적",jpsailor:"일본 뱃사람",cnman:"중국 뱃사람",wae:"왜병",villager:"사람",woman:"아낙",maid:"시비",monk:"혜정 스님",sagong:"조선 뱃사람",yeokjol:"조선 군사",buddha:"장육금불"};
+const NAMES={narr:"",choiy:"최척",choim:"최척",choio:"최척",oky:"옥영",okw:"옥영",okm:"옥영",okc:"옥영",okj:"옥영",okk:"옥영",suk:"최숙",sim:"심씨",jeong:"정상사",chunsaeng:"춘생",uib:"의병장",yeo:"여유문",juu:"주우",duhong:"두홍",donu:"돈우",mongseok:"몽석",mongseon:"몽선",hongdo:"홍도",oldbarb:"늙은 오랑캐",jurchen:"오랑캐 병사",mingsol:"명나라 병사",wigyeong:"중국 사람",pirate:"해적",jpsailor:"일본 뱃사람",cnman:"중국 뱃사람",wae:"왜병",oldman:"노인",oldwoman:"노파",villager:"사람",woman:"아낙",maid:"시비",monk:"혜정 스님",sagong:"조선 뱃사람",yeokjol:"조선 군사",buddha:"장육금불"};
 function setBodyTalking(on){document.body.classList.toggle("talking",on)}
 function recAdd(who,t){if(!G.rec.some(r=>r.t===t)){G.rec.push({ch:G.ch,route:G.route,who:NAMES[who]||who,t,g:glossOf(t)||""});$("#nRec").textContent=G.rec.length;writeSave()}}
 function say(who,text,opt){
@@ -2743,7 +2744,7 @@ function spawnFoes(n,cands,look,name){const out=[];for(const [x,y] of cands){if(
 /* ═════════ 장면을 살리는 것들: 쓰러진 모습, 감정이 드러난 초상, 머리 위 감정 표시, 눈물, 큰 글씨, 군중의 움직임, 물결·기러기·벼락·노을 ═════════
    모두 본문에 있는 일을 눈에 보이게 하는 데만 쓴다(본문에 없는 사건을 만들지 않는다). */
 /* ── 쓰러지거나 엎드린 모습: art/d_<모습>.png (한 장에 한 사람, 자홍 배경). 인물의 down 이 켜지면 서 있는 그림을 눕히는 대신 이 그림을 쓴다 ── */
-const DOWNSPEC={oky:["w",30],chunsaeng:["w",30],choiy:["w",32],choio:["w",32],mongseok:["h",22],mongseon:["w",30],hongdo:["w",30],okj:["w",28],sim:["h",22]},DOWNIMG={};
+const DOWNSPEC={oky:["w",30],chunsaeng:["w",30],choiy:["w",32],choio:["w",32],mongseok:["h",22],mongseon:["w",30],hongdo:["w",30],okj:["w",28],sim:["h",22],oldman:["w",30],oldwoman:["w",28],cnman:["w",30],jpsailor:["w",28]},DOWNIMG={};
 for(const [look,sp] of Object.entries(DOWNSPEC)){const img=new Image();img.onload=()=>{try{const W=img.naturalWidth,H=img.naturalHeight,c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d",{willReadFrequently:true});g.drawImage(img,0,0);
     const d=g.getImageData(0,0,W,H),a=d.data,cs=[[2,2],[W-3,2],[2,H-3],[W-3,H-3]].map(([x,y])=>{const i=(y*W+x)*4;return[a[i],a[i+1],a[i+2]]});keyOut(a,W,H,[0,1,2].map(k=>cs.reduce((s,q)=>s+q[k],0)/4));g.putImageData(d,0,0);
     let x0=W,x1=0,y0=H,y1=0;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(a[(y*W+x)*4+3]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
@@ -2858,6 +2859,72 @@ function dressUp(o){if(LITE())return Promise.resolve();return new Promise(res=>{
     if(e.target.closest("[data-ok]")){if(good()){sfx("poof");gmClose(v);res()}else{sfx("wrong");shk(box);miss(o.title);st.textContent=o.fail}}});
   UI.onKey=()=>true})}
 
+/* ═════════ 덧붙인 놀이(교사 의견 2026-10-19 “게임 요소가 너무 하나라 재미없다”): 몸을 움직이는 놀이와 찾는 놀이 ═════════
+   archery   활쏘기 (최척 편 2장, 본문 “활쏘기와 말타기를 잘했기 때문에 의병에 뽑혀서”)
+   waveRow   치솟는 파도를 피해 노 젓기 (옥영 편 6장, 본문 “푸른 파도는 하늘이 놀랄 정도로 치솟아 올랐다” 뒤 “노는 부러지고”)
+   crowdFind 피난민 틈에서 식구 찾아 모으기 (최척 편 3장, 본문 “뭇 사람에 뒤섞이어도 보는 사람들마다 옥영이 여자인 줄을 몰랐다”)
+   soundFind 갑판에서 피리 소리가 가장 잘 들리는 쪽 찾기 (옥영 편 4장, 본문 “어젯밤에 들려왔던 피리 소리가 조선의 곡조인데다”)
+   모두 실패해도 막히지 않고, 읽기 중심(?lite=1)에서는 건너뛴다. 자동 진행기가 풀 수 있게 data-hot·data-dodge 를 단다. */
+function gmCanvas(html,w,h){const v=gmOpen(html+`<canvas class="gmc" width="${w}" height="${h}" style="width:100%;max-width:${w*1.6}px;image-rendering:pixelated;border:2px solid var(--ink2);background:#cfe3ea;display:block;margin:10px auto"></canvas>`);return [v,v.querySelector("canvas.gmc")]}
+
+/* 활쏘기: 움직이는 과녁이 가운데 붉은 줄에 올 때 쏜다. 다섯 발 */
+function archery(){if(LITE())return Promise.resolve();return new Promise(res=>{
+  const [v,c]=gmCanvas(`<span class="eb">활쏘기</span><h2>과녁을 맞혀라</h2><p class="note">최척은 활쏘기를 잘해 의병에 뽑혔어요. 과녁이 가운데 붉은 줄에 올 때 쏘세요(Space · E · 단추). 화살은 다섯 발.</p>`,300,150);
+  v.firstElementChild.insertAdjacentHTML("beforeend",`<div class="row"><button class="btn pri pressb" data-press>쏘기</button></div><div class="st" id="arSt">● ● ● ● ●</div>`);
+  const g=c.getContext("2d"),st=v.querySelector("#arSt");let t0=performance.now(),left=5,hits=0,alive=true,fly=null;const marks=[];
+  const tx=()=>150+Math.sin((performance.now()-t0)/1000*(1.6+(5-left)*0.25))*110;
+  const draw=()=>{if(!alive)return;g.clearRect(0,0,300,150);g.fillStyle="#7fae6a";g.fillRect(0,95,300,55);g.fillStyle="#b9d3dc";g.fillRect(0,0,300,95);
+    const x=tx();g.fillStyle="#6d4b2c";g.fillRect(x-2,55,4,40);for(const [r,cl] of [[18,"#f4f1ea"],[13,"#2f4a6d"],[8,"#d9432f"],[3,"#f2c94c"]]){g.fillStyle=cl;g.beginPath();g.arc(x,45,r,0,7);g.fill()}
+    for(const m of marks){g.fillStyle="#3a2618";g.fillRect(x+m-1,40,2,10)}
+    g.strokeStyle="rgba(200,40,30,.8)";g.setLineDash([4,4]);g.beginPath();g.moveTo(150,0);g.lineTo(150,150);g.stroke();g.setLineDash([]);
+    if(fly){const q=(performance.now()-fly.t)/300;if(q>=1)fly=null;else{g.fillStyle="#3a2618";g.fillRect(148,140-q*95,3,14);g.fillStyle="#e9e2cf";g.fillRect(146,152-q*95,7,3)}}
+    v.dataset.hot=Math.abs(x-150)<7&&left>0&&!fly?"1":"";requestAnimationFrame(draw)};draw();
+  const shoot=()=>{if(!alive||left<=0||fly)return;left--;fly={t:performance.now()};sfx("swish");const off=tx()-150;
+    setTimeout(()=>{if(Math.abs(off)<14){hits++;marks.push(-off);sfx("whack")}else sfx("wrong");st.textContent="● ".repeat(left)+"○ ".repeat(5-left)+"  맞힘 "+hits;
+      if(left<=0){alive=false;st.textContent="다섯 발 가운데 "+hits+"발을 맞혔다"+(hits>=3?" · 명궁이다!":"");v.dataset.hot="";setTimeout(()=>{gmClose(v);res(hits)},1100)}},300)};
+  v.addEventListener("click",e=>{if(e.target.closest("[data-press]"))shoot()});UI.onKey=e=>{if(["Space","KeyE","Enter"].includes(e.code))shoot();return true}})}
+
+/* 파도 피하며 노 젓기: 배를 좌우로 움직여 몰려오는 큰 파도를 피한다. 시간이 다 되면 노가 부러진다(본문대로) */
+function waveRow(){if(LITE())return Promise.resolve();return new Promise(res=>{
+  const [v,c]=gmCanvas(`<span class="eb">풍랑</span><h2>치솟는 파도를 피해 노를 저어라</h2><p class="note">해가 지자 흰 이무기가 풍랑을 일으켰어요. ◀ ▶(또는 방향키)로 배를 움직여 큰 파도를 피하세요. 버틸 수 있는 데까지 버텨요.</p>`,240,260);
+  v.firstElementChild.insertAdjacentHTML("beforeend",`<div class="row" style="justify-content:center;gap:24px"><button class="btn pri" data-l style="font-size:24px;padding:10px 26px">◀</button><button class="btn pri" data-r style="font-size:24px;padding:10px 26px">▶</button></div><div class="st" id="wvSt">&nbsp;</div>`);
+  const g=c.getContext("2d"),st=v.querySelector("#wvSt");let bx=120,dir=0,alive=true,hit=0,t0=performance.now(),last=t0,spawn=0;const W=[];
+  const step=now=>{if(!alive)return;const dt=Math.min(0.05,(now-last)/1000);last=now;const el=(now-t0)/1000;bx=Math.max(20,Math.min(220,bx+dir*150*dt));
+    spawn-=dt;if(spawn<=0){spawn=0.55-Math.min(0.25,el*0.01);W.push({x:20+Math.random()*200,y:-20,w:30+Math.random()*30,s:90+el*4})}
+    g.fillStyle="rgb(30,60,90)";g.fillRect(0,0,240,260);g.fillStyle="rgba(255,255,255,.15)";for(let i=0;i<20;i++)g.fillRect((i*37+el*30)%240,(i*53+el*80)%260,6,1);
+    for(const w of W){w.y+=w.s*dt;g.fillStyle="#e8f2f6";g.beginPath();g.ellipse(w.x,w.y,w.w/2,8,0,Math.PI,0);g.fill();g.fillStyle="#9cc7dc";g.fillRect(w.x-w.w/2,w.y,w.w,4);
+      if(!w.hit&&Math.abs(w.y-220)<10&&Math.abs(w.x-bx)<w.w/2+12){w.hit=1;hit++;sfx("splash");c.style.transform="translateX(4px)";setTimeout(()=>c.style.transform="",120)}}
+    while(W.length&&W[0].y>290)W.shift();
+    g.fillStyle="#5a3b22";g.beginPath();g.moveTo(bx-16,214);g.lineTo(bx+16,214);g.lineTo(bx+10,230);g.lineTo(bx-10,230);g.fill();g.fillStyle="#efe3c6";g.fillRect(bx-1,190,2,24);g.fillRect(bx,194,12,14);
+    const near=W.find(w=>!w.hit&&w.y>150&&w.y<225&&Math.abs(w.x-bx)<w.w/2+14);v.dataset.dodge=near?(near.x>bx?"l":"r"):"";
+    st.textContent="버틴 시간 "+Math.floor(el)+"초 · 부딪힌 파도 "+hit;
+    if(el>=16){alive=false;sfx("thunder");st.textContent="뚝! 노가 부러졌다";setTimeout(()=>{gmClose(v);res(hit)},1000);return}
+    requestAnimationFrame(step)};requestAnimationFrame(step);
+  const hold=(sel,d)=>{const b=v.querySelector(sel);const on=e=>{e.preventDefault();dir=d},off=e=>{e.preventDefault();if(dir===d)dir=0};b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);b.addEventListener("pointerleave",off);b.addEventListener("pointercancel",off)};hold("[data-l]",-1);hold("[data-r]",1);
+  const kd=e=>{if(e.code==="ArrowLeft"||e.code==="KeyA")dir=-1;if(e.code==="ArrowRight"||e.code==="KeyD")dir=1},ku=e=>{if((e.code==="ArrowLeft"||e.code==="KeyA")&&dir<0)dir=0;if((e.code==="ArrowRight"||e.code==="KeyD")&&dir>0)dir=0};
+  addEventListener("keydown",kd);addEventListener("keyup",ku);const clean=setInterval(()=>{if(!alive){removeEventListener("keydown",kd);removeEventListener("keyup",ku);clearInterval(clean)}},500);
+  UI.onKey=()=>true})}
+
+/* 식구 찾아 모으기: 피난민 무리 속에서 식구에게 말을 걸어 모은다. 식구에게는 느낌표가 없다(자동 진행기에만 보임) */
+function crowdFind(o){return new Promise(res=>{const m=G.map,fam=o.family,found=new Set();
+  const prog=()=>setObj(o.goal+" ("+found.size+"/"+fam.length+")");
+  for(const [id,look,name,x,y,line] of fam){const n=npc(id,look,"",x,y,"d",async()=>{if(found.has(id))return;found.add(id);n.name=name;n.wander=0;n.fixed=1;emote(n,"!");sfx("correct");await NR(line);prog();if(found.size>=fam.length){setObj("");res()}},
+    {wander:LITE()?0:1,mark:()=>(LITE()||!!window.DRV)&&!found.has(id)});m.npcs.push(n)}
+  if(!LITE())o.crowd.forEach(([look,x,y],i)=>m.npcs.push(npc("cr"+i,look,"",x,y,"d",async()=>{await NR(o.stranger)},{wander:2})));
+  prog();tip(o.tip)})}
+
+/* 소리 찾기: 갑판 위에서 소리가 가장 잘 들리는 칸을 찾는다. 가까울수록 소리 막대가 차고 가락이 커진다 */
+function soundFind(o){return new Promise(res=>{if(LITE()){res();return}
+  if(!document.getElementById("sndcss")){const st=document.createElement("style");st.id="sndcss";st.textContent=".sndbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top,0px));z-index:7;background:rgba(241,234,216,.95);border:2px solid var(--ink2);padding:6px 12px;font:13px var(--ui);display:flex;gap:8px;align-items:center;pointer-events:none}.sndbar i{display:block;width:120px;height:10px;border:1px solid var(--ink2);background:#e5dac0}.sndbar u{display:block;height:100%;width:0;background:var(--seal);transition:width .2s}";document.head.appendChild(st)}
+  const bar=document.createElement("div");bar.className="sndbar";bar.innerHTML="<b>"+esc(o.label)+"</b><i><u></u></i>";document.body.appendChild(bar);
+  G.zone={test:(x,y)=>x===o.x&&y===o.y,fn:async()=>{}};
+  let k=0;const tm=setInterval(()=>{const p=G.player,d=Math.abs(p.tx-o.x)+Math.abs(p.ty-o.y),q=Math.max(0,1-d/o.range);bar.querySelector("u").style.width=(q*100)+"%";
+    if(++k%3===0&&typeof AU!=="undefined"&&AU.ctx&&AU.sfxOn){const f=[587,659,784,880,784][(k/3|0)%5];gPiri(f,AU.ctx.currentTime+0.01,0.35,0.02+q*0.08)}
+    if(d===0){clearInterval(tm);bar.remove();G.zone=null;sfx("correct");res()}},200)})}
+
+/* 걸어 다니는 놀이(식구 찾기, 소리 찾기) 뒤에 다음 대본을 잇는다: 대본이 도는 동안에는 인물이 걸을 수 없으므로, 앞 대본을 끝내고 놀이가 끝나면 이어 간다 */
+function later(p,fn){p.then(()=>{const go=()=>G.busy||UI.modal?setTimeout(go,120):run(fn);setTimeout(go,60)})}
+
 /* ══════════════ 최척 편 ══════════════ */
 /* @숫자 는 전문(자료/mod.txt)의 그 줄을 글자 그대로 가져온다 (build.js 가 바꿔 넣음). 손으로 옮겨 적지 않는다. */
 
@@ -2945,6 +3012,7 @@ CHS.c[2]={mood:"camp",
   async intro(){
     await card("제2장","의병 진중과 봄밤의 피리","혼례를 약속하고 날을 손꼽아 기다리던 무렵.");
     await S([...nn("세월이 어느 정도 흐른 뒤였다.","남원부 사람으로 전에 참봉을 지냈던 변사정이 의병을 모집하여 영남으로 가려고 하였는데, 최척은 활쏘기와 말타기를 잘했기 때문에 의병에 뽑혀서 동행하게 되었다.")]);meet("uib");trait("real");
+    await archery();
     await S([...nn("최척은 진중에 있으면서 옥영에 대한 근심과 걱정으로 몸이 아프게 되었다.")]);holdSet(me(),"sojang");
     setObj("의병장에게 휴가를 청하는 소장을 올리자 ↑");
   }};
@@ -3007,17 +3075,26 @@ async function c2Pray(){
 /* 제3장 정유년, 흩어진 식구 */
 CHS.c[3]={mood:"war",
   setup(){const m=buildMount();G.map=m;G.cl="choiy";G.ol="okm";place(16,8,"d","choiy");G.tint="rgba(120,90,60,.10)";here("gurye");
-    m.npcs.push(npc("okm","okm","옥영",18,7,"d",null,{fixed:1}),npc("suk","suk","최숙",14,7,"r",null,{fixed:1}),npc("sim","sim","심씨",15,6,"d",null,{fixed:1}),npc("cs","chunsaeng","춘생",19,8,"l",null,{fixed:1,hold:"baby"}),
-      npc("j1","villager","장정",12,9,"r",null,{fixed:1}),npc("j2","villager","장정",13,10,"u",null,{fixed:1}))},
+    m.npcs.push(npc("j1","villager","장정",12,9,"r",null,{fixed:1}),npc("j2","villager","장정",13,10,"u",null,{fixed:1}))},
   async intro(){
     await card("제3장","정유년, 흩어진 식구","정유년 8월, 왜구가 남원을 함락했다.","s3");
     await S([...nn("정유년 8월에 왜구가 남원을 함락하자 사람들이 모두 피난 가 숨었으며, 최척의 가족들도 지리산 연곡사로 피난을 갔다.")]);meet("s_war1");trait("real");
+    await NR("피난민들이 산길을 메웠다. 흩어진 식구를 찾아 모으자.");
+    later(crowdFind({goal:"피난민 틈에서 식구 넷을 찾아 모으자",stranger:"낯선 피난민이다. 우리 식구가 아니다.",
+      tip:"피난민 무리 속에 식구 넷이 섞여 있어요. 한 사람씩 말을 걸어 찾아보세요. 남장한 옥영은 알아보기 어려울 거예요.",
+      family:[["suk","suk","최숙",19,12,"아버지다. 무사하시다."],["sim","sim","심씨",22,15,"장모님이다."],["cs","chunsaeng","춘생",24,17,"춘생이 어린 몽석을 업고 있다."],["okm","okm","옥영",21,13,"남자 차림의 젊은이……. 가까이 가서야 옥영인 줄 알았다."]],
+      crowd:[["villager",17,9],["woman",20,10],["oldman",18,13],["oldwoman",23,13],["villager",25,19],["woman",16,11],["oldman",26,20],["villager",20,16],["woman",23,18]]}),c3Gathered);
+  }};
+async function c3Gathered(){
+    for(const n of [...G.map.npcs])if(/^cr\d/.test(n.id))vanish(n);
+    for(const [id,x,y] of [["okm",18,7],["suk",14,7],["sim",15,6],["cs",19,8]]){const n=N(id);n.tx=x;n.ty=y;n.wander=0;n.fixed=1}
+    place(16,8,"d");
     await S([...nn("최척은 옥영에게 남장을 하게 했는데, 뭇 사람에 뒤섞이어도 보는 사람들마다 옥영이 여자인 줄을 몰랐다.")]);meet("s_namjang");
-    tip("최척은 옥영에게 남장을 하게 했어요. 난리 속에서 여자로 보이면 더 위험했기 때문이에요. 이 남장이 뒤에서 옥영을 살려요.");
+    tip("최척은 옥영에게 남장을 하게 했어요. 난리 속에서 여자로 보이면 더 위험했기 때문이에요. 방금 찾아보았듯, 무리 속에 섞이면 알아보기 어려웠어요. 이 남장이 뒤에서 옥영을 살려요.");
     await S([...nn("지리산으로 들어온 지 며칠이 지나자 양식이 다 떨어져 거의 굶주리게 되었다.","최척은 장정 서너 사람과 함께 양식도 구하고 왜적의 형세도 살펴볼 겸 산에서 내려왔다.")]);
     await vanish(N("j1"));await vanish(N("j2"));
     setObj("장정들과 함께 산을 내려가자 ↘ (구례 쪽)");zoneAt((x,y)=>y>=20,c3Hide);
-  }};
+}
 async function c3Hide(){
   const F=G.f;setObj("");place(28,22,"l");
   const w1=npc("w1","wae","적병",14,21,"r",null,{}),w2=npc("w2","wae","적병",20,19,"l",null,{});G.map.npcs.push(w1,w2);for(const id of ["okm","suk","sim","cs"])N(id).show=()=>false;
@@ -3031,8 +3108,8 @@ async function c3After(){
   await S([...nn("최척 일행은 구례에 이르러서 갑자기 적병을 만나게 되었는데, 모두 바위 골짜기에 몸을 숨겨 겨우 붙잡히는 것을 면했다.")]);
   await card("사흘 뒤","연곡사","길이 막혀 사흘을 숨어 있다가, 겨우 절로 돌아왔다.");
   place(16,9,"u");setMood("grief");G.tint="rgba(60,60,70,.22)";
-  const o1=npc("o1","villager","노인",13,10,"r",null,{fixed:1,down:1}),o2=npc("o2","villager","노인",19,10,"l",null,{fixed:1,down:1});G.map.npcs.push(o1,o2);
-  await S([...nn("이날 왜적들은 연곡사로 가득히 쳐들어가 아무 것도 남기지 않고 다 약탈해 갔다.","최척 일행은 길이 막혀 3일 동안이나 오도가도 못하고 숨어 있었다.","왜적들이 물러가기를 기다렸다가 간신히 연곡사로 들어가 보니, 시체가 절에 가득히 쌓여 있고 피가 흘러 내를 이루고 있었다.","그런데 이때 숲 속에서 신음소리가 은은히 들려왔다.","최척이 달려가 보니, 노인 몇 사람이 온 몸에 상처를 입고 신음하고 있었다.","노인들은 최척을 보자 통곡하며 말했다."),...qq("villager","노인들","적병이 산에 들어와서 3일 동안 재물을 약탈하고 인민들을 베어 죽였으며, 아이들과 여자들은 모두 끌고 어제 겨우 섬진강으로 물러갔네.","자네 가족들을 찾고 싶으면 물가에 가서 물어 보게나.")]);
+  const o1=npc("o1","oldman","노인",13,10,"r",null,{fixed:1,down:1}),o2=npc("o2","oldwoman","노인",19,10,"l",null,{fixed:1,down:1});G.map.npcs.push(o1,o2);
+  await S([...nn("이날 왜적들은 연곡사로 가득히 쳐들어가 아무 것도 남기지 않고 다 약탈해 갔다.","최척 일행은 길이 막혀 3일 동안이나 오도가도 못하고 숨어 있었다.","왜적들이 물러가기를 기다렸다가 간신히 연곡사로 들어가 보니, 시체가 절에 가득히 쌓여 있고 피가 흘러 내를 이루고 있었다.","그런데 이때 숲 속에서 신음소리가 은은히 들려왔다.","최척이 달려가 보니, 노인 몇 사람이 온 몸에 상처를 입고 신음하고 있었다.","노인들은 최척을 보자 통곡하며 말했다."),...qq("oldman","노인들","적병이 산에 들어와서 3일 동안 재물을 약탈하고 인민들을 베어 죽였으며, 아이들과 여자들은 모두 끌고 어제 겨우 섬진강으로 물러갔네.","자네 가족들을 찾고 싶으면 물가에 가서 물어 보게나.")]);
   me().cry=1;face("choiy","cry");
   await S([...nn("최척은 하늘을 부르짖으며 통곡하고 땅을 치며 피를 토한 뒤, 즉시 섬진강으로 달려갔다.")]);me().cry=0;
   /* 섬진강으로 */
@@ -3049,8 +3126,8 @@ async function c3Chunsaeng(){
   await S([...nn("춘생은 말을 마치더니 이내 죽고 말았다.")]);await vanish(cs);
   me().down=1;sfx("thud");G.shake=4;
   await S([...nn("최척은 주먹으로 가슴을 치고, 땅에 쓰러져 기절했다가 한참 후에야 깨어났다.")]);me().down=0;face("choiy");
-  const o=[npc("o1","villager","노인",20,12,"l",null,{fixed:1,down:1}),npc("o2","villager","노인",23,12,"l",null,{fixed:1}),npc("o3","woman","",25,11,"l",null,{fixed:1,down:1})];G.map.npcs.push(...o);place(18,12,"r");
-  await S([...nn("이윽고 정신을 가다듬어 섬진강으로 가서 보니, 강둑 위에 상처를 입고 쓰러진 수십 명의 노약자들이 서로 모여서 통곡을 하고 있었다.","최척이 다가가서 묻자, 노인들이 대답했다."),...qq("villager","노인들","산 속에 숨어 있다가 왜적에게 여기까지 끌려 왔네.","왜적들은 여기에서 장정들만 가려 배에 실어 가고, 이처럼 병이 들거나 칼에 찔린 노약자들은 버려 두었네."),...nn("최척은 이 이야기를 듣고 대성통곡을 하였다.","혼자만 온전하게 살아남을 수 없다고 생각하여 자살을 하려고 했으나, 주위 사람들이 만류하여 죽을 수도 없었다.","그래서 강의 상류로 터덜터덜 걸어올라 갔는데, 막상 돌아갈 곳도 없었다.")]);
+  const o=[npc("o1","oldman","노인",20,12,"l",null,{fixed:1,down:1}),npc("o2","oldman","노인",23,12,"l",null,{fixed:1}),npc("o3","oldwoman","",25,11,"l",null,{fixed:1,down:1})];G.map.npcs.push(...o);place(18,12,"r");
+  await S([...nn("이윽고 정신을 가다듬어 섬진강으로 가서 보니, 강둑 위에 상처를 입고 쓰러진 수십 명의 노약자들이 서로 모여서 통곡을 하고 있었다.","최척이 다가가서 묻자, 노인들이 대답했다."),...qq("oldman","노인들","산 속에 숨어 있다가 왜적에게 여기까지 끌려 왔네.","왜적들은 여기에서 장정들만 가려 배에 실어 가고, 이처럼 병이 들거나 칼에 찔린 노약자들은 버려 두었네."),...nn("최척은 이 이야기를 듣고 대성통곡을 하였다.","혼자만 온전하게 살아남을 수 없다고 생각하여 자살을 하려고 했으나, 주위 사람들이 만류하여 죽을 수도 없었다.","그래서 강의 상류로 터덜터덜 걸어올라 갔는데, 막상 돌아갈 곳도 없었다.")]);
   /* 무너진 남원 */
   const n=buildNamwon({ruin:1});G.map=n;place(6,14,"r");G.waves=false;G.tint="rgba(70,60,60,.22)";setMood("sorrow");
   await S([...nn("샛길을 찾아 겨우 고향에 이르러서보니, 담벼락은 무너지거나 깨어져 있었다.","그 밖의 다른 것들도 모두 불타버려 쉴 곳은 물론, 곳곳에 시체가 언덕처럼 쌓여 발 디딜 틈도 없었다.")]);
@@ -3427,6 +3504,10 @@ CHS.o[4]={mood:"annam",
     await S([...nn("이때 문득 일본인 배 안에서 염불하는 소리가 은은히 들려 왔는데, 그 소리가 매우 구슬펐다.")]);
     tip("이 염불 소리는 옥영이 탄 일본 배에서 나요. 부처를 섬기는 돈우의 배예요. 저쪽 중국 배에서 누군가 이 소리를 듣고 있어요.");
     await S([...nn("최척은 홀로 선창에 기대어 있다가 이 소리를 듣고 자신의 신세가 처량하게 느껴졌다.","그래서 즉시 행장에서 피리를 꺼내 몇 곡을 불어서 가슴속에 맺힌 회한을 풀었다.","때마침 바다와 하늘은 고요하고 구름과 안개가 걷히니, 애절한 가락과 그윽한 흐느낌이 피리 소리에 뒤섞이어 맑게 퍼져나갔다.","이에 수많은 뱃사람들이 놀라 잠에서 깨어났으며, 그들은 처연하게 앉아 피리 소리에 조용히 귀를 기울였다.","격분해서 머리가 곧추 선 사람도 피리 소리에 분을 가라앉힐 정도였다.")]);N("j1").down=0;
+    setObj("갑판에서 피리 소리가 가장 잘 들리는 쪽을 찾아보자");tip("어디선가 피리 소리가 들려요. 갑판 위를 걸어 다니며 소리 막대가 가장 길어지는 곳을 찾아보세요.");
+    later(soundFind({label:"피리 소리",x:28,y:17,range:9}),o4Recite);
+  }};
+async function o4Recite(){setObj("");me().dir="l";
     await must("okm","저 피리 소리, 조선의 곡조다. 평소에 익히 듣던 가락과 너무 닮았다.",["못 들은 척 잠을 청한다","남편 생각에 그 봄밤의 시를 읊는다"],1,"본문의 옥영은 남편 생각에 감회가 일어 저절로 시를 읊어요.");
     await tokenMatch("어떤 시를 읊을까? 그 봄밤에 남편의 피리를 듣고 지은 시가 있었다.","poem","봄밤에 처음 지어 읊은 절구를 떠올려 보세요. 피리 부는 옛사람이 나왔어요.");
     await S([...nn("잠시 후에 일본인 배 안에서 조선말로 칠언절구를 읊었다."),...qq("O",0,"왕자진의 피리 소리에 달마저 떨어지려 하는데,","바다처럼 푸른 하늘엔 이슬만 서늘하구나."),...nn("시를 읊는 소리는 처절하여 마치 원망하는 듯, 호소하는 듯 하였다.","시를 다 읊더니, 그 사람은 길게 한숨을 내쉬었다.","옥영도 어젯밤에 들려왔던 피리 소리가 조선의 곡조인데다, 평소에 익히 들었던 것과 너무나 흡사하였다.","그래서 남편 생각에 감회가 일어 저절로 시를 읊게 되었던 것이다.")]);trait("poem");
@@ -3436,7 +3517,7 @@ CHS.o[4]={mood:"annam",
     const c=N("choi");c.tx=32;c.ty=12;c.dir="d";holdSet(c,null);
     await S([...nn("동방이 밝아오자, 즉시 강둑을 내려가 일본인 배에 이르러 조선말로 물었다."),...qq("choim","강둑의 조선 사람","어젯밤에 시조를 읊던 사람은 조선 사람 아닙니까?","나도 조선 사람이기 때문에 한 번 만나 보았으면 합니다.","멀리 다른 나라를 떠도는 사람이 비슷하게 생긴 고국 사람을 만나는 것이 어찌 기쁘기만 한 일이겠습니까?")]);
     setObj("누가 찾는 것일까. 널다리 쪽으로 나가 보자 ↑");zoneAt((x,y)=>x>=31&&x<=34&&y<=14,o4Meet);
-  }};
+}
 async function o4Meet(){
   setObj("");const c=N("choi");place(32,13,"u");c.name="최척";
   await S([...nn("옥영은 자기를 찾는 사람의 목소리를 듣고는 황망하게 뛰어나와 최척을 보았다.")]);
@@ -3524,7 +3605,9 @@ CHS.o[6]={mood:"sea",
     /* 풍랑 */
     G.wind=Math.PI;await S([...nn("이날 남풍이 심하게 불었다.")]);
     G.night=true;G.storm=true;setMood("storm");sfx("thunder");G.flash=0.6;G.shake=8;G.map.objs=G.map.objs.filter(o=>o.k!=="dolphin"&&o.k!=="islet");
-    await S([...nn("해가 이윽고 서쪽 바다 속으로 들어가자, 흰 이무기는 풍랑을 일으키고 푸른 파도는 하늘이 놀랄 정도로 치솟아 올랐다.","구름과 안개가 사방에 가득 끼어 지척도 분간하기 어려웠으며, 노는 부러지고 돛은 찢어져 어디로 가야 할 지 알 수가 없었다.")]);bolt(me());const dk=obj("deck");dk.sail=2;dk.broken=1;holdSet(N("mo"),null);
+    await S([...nn("해가 이윽고 서쪽 바다 속으로 들어가자, 흰 이무기는 풍랑을 일으키고 푸른 파도는 하늘이 놀랄 정도로 치솟아 올랐다.")]);
+    await waveRow();
+    await S([...nn("구름과 안개가 사방에 가득 끼어 지척도 분간하기 어려웠으며, 노는 부러지고 돛은 찢어져 어디로 가야 할 지 알 수가 없었다.")]);bolt(me());const dk=obj("deck");dk.sail=2;dk.broken=1;holdSet(N("mo"),null);
     N("mo").down=1;N("hd").down=1;holdSet(N("mo"),null);
     await S([...nn("몽선 부부는 깜짝 놀라서 뱃바닥에 엎드리더니 이내 배멀미를 하였다.")]);
     await must("okj","노는 부러지고 돛은 찢어졌다. 아들 내외는 뱃바닥에 엎드렸다.",["함께 엎드려 운다","의연하게 홀로 앉아 하늘을 우러르며 기도한다"],1,"본문의 옥영은 의연하게 홀로 앉아 말없이 기도해요.");
@@ -3564,8 +3647,11 @@ async function o6Hide(mo){
   await S([...nn("한참 후 잠에서 깨어난 옥영이 아들과 며느리에게 말했다."),...qq("O",0,"기운이 빠지고 몸이 피곤하여 문득 정신 없이 잠이 들었는데, 꿈에 장육금불께서 또 좋은 징조를 아뢰니 참 이상하구나."),...nn("세 사람은 서로 마주 보고 기뻐하면서 말없이 기도를 올렸다.")]);trait("dream");
   await S([...nn("며칠 후 멀리 바다 가운데서 돛단배가 둥둥 떠오는 것이 보였다.","이에 몽선이 놀라서 말했다."),...qq("mongseon",0,"예전에 보지 못했던 배가 바다 가운데서 다가오고 있는데, 매우 걱정이 됩니다.")]);
   await S([...nn("옥영이 머리를 들고 보더니 기뻐하며 말했다."),...qq("O",0,"너는 겁내지 말아라.","우리는 이제 살았다.","저것은 조선인의 배다.","기다려 보면 당연히 알게 될 것이다.")]);
-  holdSet(me(),"willow");
-  setObj("버드나무 가지를 태워 연기를 올리자 (언덕 위) ↑");zoneAt((x,y)=>y<=8&&x>=12&&x<=22,o6Signal);
+  const br=[[11,9],[23,8],[21,10]];let got=0;
+  setObj("연기를 피울 버드나무 가지를 모으자 (0/3)");tip("섬의 버드나무 곁에 가지가 떨어져 있어요. 세 개를 모아 언덕 위에서 태워 연기를 올리세요.");
+  br.forEach(([x,y],i)=>{const o={k:"dc",t:"wood",x,y,w:1,h:1,id:"br"+i,s:0.5};o.mark=()=>!o.taken;o.hide=()=>o.taken;o.use=async()=>{if(o.taken)return;o.taken=1;got++;sfx("give");holdSet(me(),"willow");
+    if(got<3){setObj("연기를 피울 버드나무 가지를 모으자 ("+got+"/3)");return}
+    setObj("버드나무 가지를 태워 연기를 올리자 (언덕 위) ↑");zoneAt((x,y)=>y<=8&&x>=12&&x<=22,o6Signal)};G.map.objs.push(o)});
 }
 async function o6Signal(){
   setObj("");holdSet(me(),null);const m=G.map;m.objs.push({k:"bonfire",x:me().tx+1,y:me().ty,w:1,h:1,id:"fire"});sfx("fire");
