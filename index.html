@@ -2895,7 +2895,7 @@ function archery(){if(LITE())return Promise.resolve();return new Promise(res=>{
     const fx=24,fy=30;g.fillStyle="#5a3b22";g.fillRect(fx,fy,2,46);const fl=Math.sin(t*9)*2;g.fillStyle="#b53a2c";g.beginPath();g.moveTo(fx+1,fy);g.lineTo(fx+1+wind*5,fy+5+fl);g.lineTo(fx+1,fy+11);g.fill();
     g.fillStyle="#1d1813";g.font="bold 12px sans-serif";g.fillText("바람 "+(wind>0?"→ ":wind<0?"← ":"")+Math.abs(wind).toFixed(1),fx-12,fy+62);
     /* 날아가는 화살 */
-    if(fly){const q=(performance.now()-fly.t)/500;if(q>=1){const hp={x:fly.x,y:fly.y},sc=ringScore(hp.x,hp.y);holes.push(hp);score+=sc;fly=null;sfx(sc?"whack":"wrong");
+    if(fly){const q=(performance.now()-fly.t)/500;if(q>=1){const hp={x:fly.x,y:fly.y},sc=ringScore(hp.x,hp.y);holes.push(hp);score+=sc;fly=null;if(sc)amb("thock");else sfx("wrong");
         st.textContent="화살 "+left+" · 점수 "+score+"  ("+(sc?sc+"점":"빗나감")+")";newWind();if(left<=0)finish()}
       else{const s=1-q*0.85,x=CX+(fly.x-CX)*q,y=H-10+(fly.y-(H-10))*q-Math.sin(Math.PI*q)*30;g.save();g.translate(x,y);g.scale(s,s);g.fillStyle="#3a2618";g.fillRect(-2,0,4,30);g.fillStyle="#e9e2cf";g.fillRect(-5,22,10,8);g.restore()}}
     /* 조준점 */
@@ -2907,7 +2907,7 @@ function archery(){if(LITE())return Promise.resolve();return new Promise(res=>{
   const finish=()=>{alive=false;const r=score>=40?"명궁이다!":score>=28?"솜씨가 좋다":"바람이 만만치 않다";st.textContent="다섯 발 합계 "+score+"점 · "+r;v.dataset.hot="";setTimeout(()=>{gmClose(v);res(score)},1400)};
   const start=()=>{if(!alive||fly||left<=0||drawing)return;drawing=true;dStart=performance.now();sfx("pull")};
   const release=(pw)=>{if(!alive||fly||left<=0)return;const t=(performance.now()-t0)/1000,p=pw!=null?pw:power();drawing=false;const [sx,sy]=sway(t);left--;
-    const x=aim.x+sx+wind*6*(1.2-p*0.5),y=aim.y+sy+(1-p)*55+6;fly={t:performance.now(),x,y};sfx("swish")};
+    const x=aim.x+sx+wind*6*(1.2-p*0.5),y=aim.y+sy+(1-p)*55+6;fly={t:performance.now(),x,y};amb("twang");sfx("swish")};
   btn.addEventListener("pointerdown",e=>{e.preventDefault();start()});btn.addEventListener("pointerup",e=>{e.preventDefault();if(drawing)release()});btn.addEventListener("pointerleave",()=>{if(drawing)release()});
   btn.addEventListener("click",e=>{if(!drawing&&!fly&&e.detail===0)release(0.9)});   /* 키보드 없이 눌린 click(자동 진행기)은 곧바로 쏜다 */
   let drag=null;c.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY};c.setPointerCapture(e.pointerId)});
@@ -2958,6 +2958,93 @@ function soundFind(o){return new Promise(res=>{if(LITE()){res();return}
 
 /* 걸어 다니는 놀이(식구 찾기, 소리 찾기) 뒤에 다음 대본을 잇는다: 대본이 도는 동안에는 인물이 걸을 수 없으므로, 앞 대본을 끝내고 놀이가 끝나면 이어 간다 */
 function later(p,fn){p.then(()=>{const go=()=>G.busy||UI.modal?setTimeout(go,120):run(fn);setTimeout(go,60)})}
+
+/* ═════════ 피리 불기: 음악에 맞춰 누르면 ‘휘익’ 숨소리와 함께 그 음이 난다(교사 의견 2026-10-19) ═════════
+   장구 장단이 깔리고, 피리 가락의 음표가 오른쪽에서 흘러와 판정선에 닿을 때 누른다. 높은 음은 위, 낮은 음은 아래에 그린다.
+   긴 음표는 누르고 있는 동안 소리가 이어지고, 떼면 멈춘다. song: [[박, 길이(박), 음 번호]…], bpm, base(기본음 Hz), scale(음계) */
+function piriVoice(f,vel){const ac=AU.ctx,t=ac.currentTime+0.005;
+  const o=ac.createOscillator(),o2=ac.createOscillator(),g=ac.createGain(),bp=ac.createBiquadFilter(),lp=ac.createBiquadFilter(),l=ac.createOscillator(),lg=ac.createGain();
+  o.type="square";o2.type="sawtooth";o.frequency.setValueAtTime(f*0.9,t);o.frequency.exponentialRampToValueAtTime(f,t+0.09);o2.frequency.setValueAtTime(f*0.9,t);o2.frequency.exponentialRampToValueAtTime(f*1.003,t+0.09);
+  l.frequency.value=5.8;lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(f*0.022,t+0.45);l.connect(lg);lg.connect(o.frequency);lg.connect(o2.frequency);
+  bp.type="bandpass";bp.frequency.value=1250;bp.Q.value=1.8;lp.type="lowpass";lp.frequency.value=3400;const m2=ac.createGain();m2.gain.value=0.5;o.connect(bp);o2.connect(m2);m2.connect(bp);bp.connect(lp);lp.connect(g);
+  g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(vel*1.25,t+0.04);g.gain.linearRampToValueAtTime(vel,t+0.14);auOut(g,true);
+  /* 휘익: 입김이 관을 지나는 소리 — 위로 쓸어 올리는 바람 소리 */
+  const n=noiseSrc(t,0.32),nf=ac.createBiquadFilter(),ng=ac.createGain();nf.type="bandpass";nf.Q.value=3;nf.frequency.setValueAtTime(700,t);nf.frequency.exponentialRampToValueAtTime(2800,t+0.22);
+  ng.gain.setValueAtTime(0.0001,t);ng.gain.linearRampToValueAtTime(vel*1.6,t+0.03);ng.gain.exponentialRampToValueAtTime(0.0008,t+0.3);n.connect(nf);nf.connect(ng);auOut(ng,true);
+  o.start(t);o2.start(t);l.start(t);let done=false;
+  return ()=>{if(done)return;done=true;const e=ac.currentTime;g.gain.cancelScheduledValues(e);g.gain.setValueAtTime(g.gain.value||vel,e);g.gain.exponentialRampToValueAtTime(0.0008,e+0.12);for(const x of [o,o2,l])x.stop(e+0.15)}}
+const PIRI_SONGS={
+  spring:{bpm:84,base:349.23,scale:[0,2,5,7,9],song:[[0,1,2],[1,1,3],[2,2,4],[4,1,3],[5,1,2],[6,2,1],[8,1,2],[9,1,3],[10,1,5],[11,1,4],[12,3,2]]},
+  annam:{bpm:62,base:293.66,scale:[0,3,5,7,10],song:[[0,2,4],[2,1,3],[3,1,2],[4,3,1],[8,1,2],[9,1,3],[10,2,4],[12,1,3],[13,3,2]]}
+};
+function piriPlay(o){if(LITE())return Promise.resolve();return new Promise(res=>{
+  auInit();const S=PIRI_SONGS[o.song],spb=60/S.bpm,lead=2.2,W=320,H=150,HX=64,SPD=110;
+  const notes=S.song.map(([b,len,d])=>({t:lead+b*spb,len:len*spb,d,hit:0,q:0}));const end=notes[notes.length-1].t+notes[notes.length-1].len+1.2;
+  const fq=d=>S.base*Math.pow(2,(Math.floor(d/S.scale.length)*12+S.scale[d%S.scale.length])/12);
+  const [v,c]=gmCanvas(`<span class="eb">${esc(o.eb||"피리")}</span><h2>${esc(o.title)}</h2><p class="note">${esc(o.desc)} 음표가 붉은 줄에 닿을 때 누르고, 긴 음표는 끝까지 누르고 있어요(Space · E · 단추).</p>`,W,H);
+  v.firstElementChild.insertAdjacentHTML("beforeend",`<div class="row"><button class="btn pri pressb" data-press style="touch-action:none">불기</button></div><div class="st" id="piSt">&nbsp;</div>`);
+  const g=c.getContext("2d"),st=v.querySelector("#piSt"),btn=v.querySelector("[data-press]");let t0=performance.now(),alive=true,cur=null,stop=null,pop=null,beat=-1,good=0;
+  const now=()=>(performance.now()-t0)/1000;
+  const yOf=d=>H-28-d*17;
+  const draw=()=>{if(!alive)return;const t=now();
+    g.fillStyle="#efe6cf";g.fillRect(0,0,W,H);for(let i=0;i<6;i++){g.fillStyle=i%2?"#e7dcc0":"#efe6cf";g.fillRect(0,yOf(i)-8,W,17)}
+    g.fillStyle="rgba(180,40,30,.85)";g.fillRect(HX-1,0,3,H);g.strokeStyle="#b53a2c";g.lineWidth=2;g.beginPath();g.arc(HX,H-14,7,0,7);g.stroke();g.lineWidth=1;
+    /* 장구 장단: 박마다 쿵/덕 */
+    const bt=Math.floor((t-lead)/spb);if(bt>beat&&t>=lead-spb*2&&AU.ctx&&AU.sfxOn){beat=bt;const at=AU.ctx.currentTime+0.01;gDrum(((bt%4)+4)%4===0?"덩":"덕",at,((bt%4)+4)%4===0?0.4:0.18)}
+    for(const n of notes){const x=HX+(n.t-t)*SPD,w=Math.max(10,n.len*SPD-6),y=yOf(n.d);if(x+w<-10||x>W+10)continue;
+      g.fillStyle=n.hit===2?"#9ac48a":n.hit===-1?"#c9b9a9":"#2f4a6d";g.beginPath();g.ellipse(x+5,y,6,6,0,0,7);g.fill();if(n.len>spb*1.1){g.fillRect(x+5,y-3,w-5,6)}
+      if(n.hit===1&&cur===n){g.fillStyle="rgba(242,201,76,.7)";g.fillRect(HX,y-4,Math.min(w,(t-n.t)*SPD),8)}}
+    if(pop&&t-pop.t<0.6){g.globalAlpha=1-(t-pop.t)/0.6;g.fillStyle=pop.c;g.font="bold 18px sans-serif";g.fillText(pop.s,HX+10,24-(t-pop.t)*20);g.globalAlpha=1}
+    /* 놓친 음표 */
+    for(const n of notes)if(!n.hit&&t>n.t+0.22){n.hit=-1;pop={s:"놓침",c:"#8a6a44",t}}
+    if(cur&&t>=cur.t+cur.len){if(stop)stop();stop=null;cur.hit=2;cur=null}
+    const nx=notes.find(n=>!n.hit);v.dataset.hot=nx&&Math.abs(nx.t-t)<0.06?"1":"";
+    if(t>end){alive=false;const r=good>=notes.length-1?"가락이 하늘거리며 퍼져 나간다":good>=notes.length/2?"가락이 이어진다":"숨이 고르지 않지만, 가락은 이어진다";st.textContent=r;if(stop)stop();setTimeout(()=>{gmClose(v);res(good)},900);return}
+    requestAnimationFrame(draw)};requestAnimationFrame(draw);
+  const press=()=>{if(!alive||cur)return;const t=now(),n=notes.find(x=>!x.hit&&Math.abs(x.t-t)<0.2);
+    if(!n){if(AU.ctx&&AU.sfxOn){const s=piriVoice(fq(0)*0.94,0.03);setTimeout(s,90)}pop={s:"삐익",c:"#8a6a44",t};return}
+    const e=Math.abs(n.t-t);n.hit=1;cur=n;good++;if(AU.ctx&&AU.sfxOn)stop=piriVoice(fq(n.d),0.09);pop=e<0.08?{s:"좋다!",c:"#b53a2c",t}:{s:"그렇지",c:"#2f4a6d",t}};
+  const release=()=>{if(!cur)return;if(stop)stop();stop=null;cur.hit=2;cur=null};
+  btn.addEventListener("pointerdown",e=>{e.preventDefault();press()});btn.addEventListener("pointerup",e=>{e.preventDefault();release()});btn.addEventListener("pointerleave",release);
+  btn.addEventListener("click",e=>{if(e.detail===0){press();setTimeout(release,250)}});
+  const kd=e=>{if(["Space","KeyE","Enter"].includes(e.code)&&!e.repeat){e.preventDefault();press()}},ku=e=>{if(["Space","KeyE","Enter"].includes(e.code))release()};
+  addEventListener("keydown",kd,true);addEventListener("keyup",ku,true);const clean=setInterval(()=>{if(!alive){removeEventListener("keydown",kd,true);removeEventListener("keyup",ku,true);clearInterval(clean)}},400);
+  UI.onKey=()=>true})}
+
+/* ═════════ 장면의 바탕 소리 (교사 질문 2026-10-19 “효과음도 충분하니?”) ═════════
+   사건 효과음(발소리·화살·북·천둥 등) 말고, 장면에 깔리는 소리를 지도와 상황을 보고 띄엄띄엄 낸다. 모두 직접 합성한 소리다.
+   바다·강: 파도 / 낮 바다: 갈매기 / 풍랑: 비·거센 바람 / 배 위: 삐걱 / 낮 땅: 새소리 / 밤: 풀벌레·개구리 / 절: 풍경·목탁 / 사람 많음: 웅성거림 */
+function amb(kind){if(typeof AU==="undefined"||!AU.ctx||!AU.sfxOn)return;const ac=AU.ctx,t=ac.currentTime+0.02,v=0.6;
+  const env=(node,a,peak,dur)=>{const g=ac.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(peak*v,t+a);g.gain.exponentialRampToValueAtTime(0.0008,t+dur);node.connect(g);auOut(g,true);return g};
+  const tone=(type,f,f2,dur,peak,at)=>{const o=ac.createOscillator();o.type=type;const s=t+(at||0);o.frequency.setValueAtTime(f,s);if(f2)o.frequency.exponentialRampToValueAtTime(f2,s+dur*0.8);const g=ac.createGain();g.gain.setValueAtTime(0.0001,s);g.gain.linearRampToValueAtTime(peak*v,s+0.01);g.gain.exponentialRampToValueAtTime(0.0008,s+dur);o.connect(g);auOut(g,true);o.start(s);o.stop(s+dur+0.05)};
+  const noise=(type,f,q,dur,a,peak)=>{const n=noiseSrc(t,dur),bf=ac.createBiquadFilter();bf.type=type;bf.frequency.value=f;bf.Q.value=q;n.connect(bf);env(bf,a,peak,dur)};
+  switch(kind){
+    case "wave":noise("lowpass",500+Math.random()*300,0.7,2.6,1.0,0.16);break;
+    case "gull":for(let i=0;i<2;i++)tone("triangle",1500+Math.random()*200,950,0.32,0.035,i*0.36);break;
+    case "rain":noise("highpass",3500,0.5,1.6,0.2,0.07);noise("bandpass",900,0.6,1.6,0.6,0.08);break;
+    case "creak":tone("sawtooth",95+Math.random()*30,70,0.5,0.025);break;
+    case "bird":{const f=2600+Math.random()*900;for(let i=0;i<3+Math.floor(Math.random()*3);i++)tone("sine",f,f*1.25,0.07,0.03,i*0.1);break}
+    case "cricket":for(let i=0;i<6;i++)tone("square",4300,4200,0.025,0.012,i*0.05);break;
+    case "frog":tone("square",210,150,0.12,0.03);tone("square",230,160,0.12,0.03,0.18);break;
+    case "chime":for(const [k,a] of [[1,0.05],[2.7,0.02]])tone("sine",1480*k,0,1.6,a);break;
+    case "moktak":tone("sine",560,420,0.12,0.09);break;
+    case "murmur":for(let i=0;i<4;i++)noise("bandpass",300+Math.random()*500,4,0.5,0.1,0.05);break;
+    case "twang":tone("triangle",180,140,0.35,0.12);noise("bandpass",2400,3,0.12,0.005,0.08);break;
+    case "thock":tone("sine",160,90,0.12,0.18);noise("lowpass",900,1,0.08,0.003,0.12);break}}
+(()=>{let k=0;setInterval(()=>{if(document.hidden||!G.map||G.demo||UI.panel)return;k++;const m=G.map,p=G.player;
+  let water=0,land=0;for(let y=Math.max(0,p.ty-6);y<Math.min(m.h,p.ty+7);y+=2)for(let x=Math.max(0,p.tx-8);x<Math.min(m.w,p.tx+9);x+=2){const c=m.g[y][x];if(c==="~")water++;else land++}
+  const onDeck=m.objs.some(o=>o.k==="deck"&&p.tx>=o.x&&p.tx<o.x+o.dw&&p.ty>o.y&&p.ty<=o.y+o.dh);
+  const temple=m.objs.some(o=>(o.id==="temple"||o.k==="altar")&&Math.abs(o.x-p.tx)<12&&Math.abs(o.y-p.ty)<10);
+  const crowd=m.npcs.filter(n=>visible(n)&&n.look!=="chicken"&&Math.abs(n.tx-p.tx)<8&&Math.abs(n.ty-p.ty)<6).length;
+  const r=Math.random();
+  if(G.storm){amb("rain");if(k%4===0)sfx("wind");return}
+  if(water>land*0.5&&k%3===0)amb("wave");
+  if(onDeck&&r<0.18)amb("creak");
+  if(G.night){if(land>water&&r<0.5)amb(r<0.35?"cricket":"frog")}
+  else{if(water>land&&r<0.12)amb("gull");else if(land>water&&r<0.22)amb("bird")}
+  if(temple&&k%5===0)amb(k%10===0?"chime":"moktak");
+  if(crowd>=6&&r<0.4)amb("murmur");
+},1400)})();
 
 /* ══════════════ 최척 편 ══════════════ */
 /* @숫자 는 전문(자료/mod.txt)의 그 줄을 글자 그대로 가져온다 (build.js 가 바꿔 넣음). 손으로 옮겨 적지 않는다. */
@@ -3096,7 +3183,7 @@ async function c2Pray(){
   G.night=true;G.petals=true;G.lights=[[15,8]];setMood("spring");place(15,9,"d");const ok=N("okw");holdSet(ok,null);ok.tx=16;ok.ty=9;ok.dir="l";holdSet(me(),"piri");
   await card("어느 봄밤","피리와 시","달이 밝고, 꽃잎이 옷에 떨어졌다.");
   await S([...nn("최척은 피리를 잘 불었으며, 매번 꽃피는 아침과 달뜨는 저녁이 되면 아내와 함께 피리를 불곤 하였다.","일찍이 날씨가 맑은 어느 봄날 밤이었는데, 어둠이 깊어 갈 무렵 미풍이 잠깐 일어나면서 밝은 달이 환하게 비추었으며, 바람에 날리던 꽃잎이 옷에 떨어져 그윽한 향기가 코끝에 스며들었다.","이에 최척과 옥영은 술병을 열고 술을 따라 마신 후, 침상에 기대어 피리를 세 곡조 부니 그 여음이 하늘거리며 퍼져나갔다.")]);
-  await rhythm({eb:"피리",title:"피리 세 곡조",desc:"최척이 아내와 함께 피리를 분다. 표시가 붉은 칸(덩·쿵)에 올 때 눌러 가락을 이어 보세요.",jang:"jinyang",beat:0.3,inst:"piri",base:349.23,label:"삐리"});
+  await piriPlay({song:"spring",title:"봄밤, 피리 세 곡조",desc:"최척이 아내와 함께 피리를 분다. 밝은 가락이에요."});
   meet("s_piri");await getToken("piri");
   await S([...nn("옥영이 한동안 침묵에 잠겨 있다가 말했다."),...qq("okw",0,"저는 본래부터 아녀자가 시를 읊는 것을 싫어했습니다.","그런데 이처럼 맑은 정경을 대하니 도저히 참을 수가 없군요."),...nn("옥영은 마침내 절구 한 수를 읊었다."),...qq("okw","옥영이 읊은 절구","왕자진이 피리를 부니 달도 내려와 들으려 하는데,","바다처럼 푸른 하늘엔 이슬이 서늘하네.","때마침 날아가는 푸른 난새를 함께 타고서도,","안개와 놀이 가득하여 봉도 가는 길 찾을 수 없네.")]);trait("poem");meet("s_poem");await getToken("poem");
   await S([...nn("최척은 애초에 자기 아내가 이렇듯 시를 잘 읊조리는 줄 모르고 있었던 터라 놀라고 또 감탄을 한 후, 즉시 그 시에 화답하여 읊었다."),...qq("C","최척이 화답한 시","아득한 요대엔 새벽 구름이 떠다니고,","맑은 난소의 곡조는 끊이지 않네.","여향 공중에 울려 퍼짐에 달은 떨어지려 하고,","뜰에 드리운 꽃 그림자는 향기로운 바람에 날리네."),...nn("최척이 읊기를 마치자, 옥영은 더없이 기뻤다.")]);
@@ -3212,7 +3299,7 @@ CHS.c[4]={mood:"china",
     await S([...nn("날짜는 어느덧 4월 보름이 되어 있었다.","하늘에는 구름 한 점 없고 물은 비단결처럼 빛났으며, 바람이 불지 않아 물결 또한 잔잔하였다.","이 날 밤이 장차 깊어 가면서 밝은 달이 강에 비추고 옅은 안개가 물위에 어리었으며, 뱃사람들은 모두 깊은 잠에 빠지고 물새만이 간간이 울고 있었다.")]);
     emote(N("donu"),"note");
     await S([...nn("이때 문득 일본인 배 안에서 염불하는 소리가 은은히 들려 왔는데, 그 소리가 매우 구슬펐다.","최척은 홀로 선창에 기대어 있다가 이 소리를 듣고 자신의 신세가 처량하게 느껴졌다.","그래서 즉시 행장에서 피리를 꺼내 몇 곡을 불어서 가슴속에 맺힌 회한을 풀었다.")]);
-    await rhythm({eb:"피리",title:"맺힌 회한을 피리에 실어",desc:"최척이 행장에서 피리를 꺼내 분다. 표시가 붉은 칸에 올 때 눌러 보세요.",jang:"jinyang",beat:0.32,inst:"piri",base:293.66,label:"삐리"});
+    await piriPlay({song:"annam",title:"맺힌 회한을 피리에 실어",desc:"최척이 행장에서 피리를 꺼내 분다. 느리고 구슬픈 가락이에요."});
     N("s1").down=0;N("j1").down=0;
     await S([...nn("때마침 바다와 하늘은 고요하고 구름과 안개가 걷히니, 애절한 가락과 그윽한 흐느낌이 피리 소리에 뒤섞이어 맑게 퍼져나갔다.","이에 수많은 뱃사람들이 놀라 잠에서 깨어났으며, 그들은 처연하게 앉아 피리 소리에 조용히 귀를 기울였다.","격분해서 머리가 곧추 선 사람도 피리 소리에 분을 가라앉힐 정도였다.")]);
     await S([...nn("잠시 후에 일본인 배 안에서 조선말로 칠언절구를 읊었다."),...qq("okm","일본 배 안의 사람","왕자진의 피리 소리에 달마저 떨어지려 하는데,","바다처럼 푸른 하늘엔 이슬만 서늘하구나.")]);
