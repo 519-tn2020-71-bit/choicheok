@@ -2867,22 +2867,56 @@ function dressUp(o){if(LITE())return Promise.resolve();return new Promise(res=>{
    모두 실패해도 막히지 않고, 읽기 중심(?lite=1)에서는 건너뛴다. 자동 진행기가 풀 수 있게 data-hot·data-dodge 를 단다. */
 function gmCanvas(html,w,h){const v=gmOpen(html+`<canvas class="gmc" width="${w}" height="${h}" style="width:100%;max-width:${w*1.6}px;image-rendering:pixelated;border:2px solid var(--ink2);background:#cfe3ea;display:block;margin:10px auto"></canvas>`);return [v,v.querySelector("canvas.gmc")]}
 
-/* 활쏘기: 움직이는 과녁이 가운데 붉은 줄에 올 때 쏜다. 다섯 발 */
+/* 활쏘기: 고정된 국궁 과녁, 바람, 조준(손떨림), 시위 당기기(힘), 화살이 날아가 꽂히고 점수. 다섯 발(교사 의견 2026-10-19: 양궁 게임처럼)
+   조준: 화면을 끌거나 방향키·WASD. 쏘기: ‘당기기’ 단추나 Space 를 누르고 있다가 뗀다.
+   덜 당기면 화살이 아래로 처지고, 너무 오래 당기면 팔이 떨려 조준이 크게 흔들린다. 바람은 화살마다 바뀌고 그만큼 화살이 옆으로 밀린다. */
 function archery(){if(LITE())return Promise.resolve();return new Promise(res=>{
-  const [v,c]=gmCanvas(`<span class="eb">활쏘기</span><h2>과녁을 맞혀라</h2><p class="note">최척은 활쏘기를 잘해 의병에 뽑혔어요. 과녁이 가운데 붉은 줄에 올 때 쏘세요(Space · E · 단추). 화살은 다섯 발.</p>`,300,150);
-  v.firstElementChild.insertAdjacentHTML("beforeend",`<div class="row"><button class="btn pri pressb" data-press>쏘기</button></div><div class="st" id="arSt">● ● ● ● ●</div>`);
-  const g=c.getContext("2d"),st=v.querySelector("#arSt");let t0=performance.now(),left=5,hits=0,alive=true,fly=null;const marks=[];
-  const tx=()=>150+Math.sin((performance.now()-t0)/1000*(1.6+(5-left)*0.25))*110;
-  const draw=()=>{if(!alive)return;g.clearRect(0,0,300,150);g.fillStyle="#7fae6a";g.fillRect(0,95,300,55);g.fillStyle="#b9d3dc";g.fillRect(0,0,300,95);
-    const x=tx();g.fillStyle="#6d4b2c";g.fillRect(x-2,55,4,40);for(const [r,cl] of [[18,"#f4f1ea"],[13,"#2f4a6d"],[8,"#d9432f"],[3,"#f2c94c"]]){g.fillStyle=cl;g.beginPath();g.arc(x,45,r,0,7);g.fill()}
-    for(const m of marks){g.fillStyle="#3a2618";g.fillRect(x+m-1,40,2,10)}
-    g.strokeStyle="rgba(200,40,30,.8)";g.setLineDash([4,4]);g.beginPath();g.moveTo(150,0);g.lineTo(150,150);g.stroke();g.setLineDash([]);
-    if(fly){const q=(performance.now()-fly.t)/300;if(q>=1)fly=null;else{g.fillStyle="#3a2618";g.fillRect(148,140-q*95,3,14);g.fillStyle="#e9e2cf";g.fillRect(146,152-q*95,7,3)}}
-    v.dataset.hot=Math.abs(x-150)<7&&left>0&&!fly?"1":"";requestAnimationFrame(draw)};draw();
-  const shoot=()=>{if(!alive||left<=0||fly)return;left--;fly={t:performance.now()};sfx("swish");const off=tx()-150;
-    setTimeout(()=>{if(Math.abs(off)<14){hits++;marks.push(-off);sfx("whack")}else sfx("wrong");st.textContent="● ".repeat(left)+"○ ".repeat(5-left)+"  맞힘 "+hits;
-      if(left<=0){alive=false;st.textContent="다섯 발 가운데 "+hits+"발을 맞혔다"+(hits>=3?" · 명궁이다!":"");v.dataset.hot="";setTimeout(()=>{gmClose(v);res(hits)},1100)}},300)};
-  v.addEventListener("click",e=>{if(e.target.closest("[data-press]"))shoot()});UI.onKey=e=>{if(["Space","KeyE","Enter"].includes(e.code))shoot();return true}})}
+  const W=320,H=230,CX=160,CY=96;
+  const [v,c]=gmCanvas(`<span class="eb">활쏘기</span><h2>과녁의 홍심을 노려라</h2><p class="note"><b>조준</b> 화면 끌기·방향키 · <b>쏘기</b> ‘당기기’를 눌렀다 떼기(Space) · 덜 당기면 처지고, 오래 버티면 떨려요 · <b>바람</b>만큼 비켜 겨누기</p>`,W,H);
+  v.firstElementChild.insertAdjacentHTML("beforeend",`<div class="row"><button class="btn pri pressb" data-press style="touch-action:none">당기기</button></div><div class="st" id="arSt">화살 5 · 점수 0</div>`);
+  c.style.touchAction="none";
+  const g=c.getContext("2d"),st=v.querySelector("#arSt"),btn=v.querySelector("[data-press]");
+  let left=5,score=0,alive=true,aim={x:CX,y:CY-10},drawing=false,dStart=0,fly=null,wind=0,t0=performance.now();const holes=[],keys2={};
+  const newWind=()=>{wind=Math.round((Math.random()*2-1)*5*10)/10};newWind();
+  const power=()=>drawing?Math.min(1,(performance.now()-dStart)/1100):0;
+  const fatigue=()=>drawing?Math.max(0,(performance.now()-dStart-2200)/1000):0;
+  const sway=t=>{const a=2.5+fatigue()*9;return [Math.sin(t*1.7)*a+Math.sin(t*4.3)*a*0.4,Math.cos(t*1.3)*a+Math.sin(t*3.1)*a*0.4]};
+  const ringScore=(x,y)=>{const d=Math.hypot(x-CX,y-CY);return d<7?10:d<14?9:d<22?8:d<30?7:d<38?6:d<46?5:d<54?4:d<62?3:d<70?2:Math.abs(x-CX)<58&&Math.abs(y-CY)<74?1:0};
+  const draw=()=>{if(!alive)return;const t=(performance.now()-t0)/1000;
+    /* 하늘·먼 산·풀밭 */
+    let gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,"#bcd8e6");gr.addColorStop(0.6,"#e6eef0");gr.addColorStop(0.61,"#8fb07a");gr.addColorStop(1,"#6f9a5a");g.fillStyle=gr;g.fillRect(0,0,W,H);
+    g.fillStyle="#9fb7a8";g.beginPath();g.moveTo(0,140);for(let x=0;x<=W;x+=20)g.lineTo(x,128-Math.sin(x*0.03)*10-Math.sin(x*0.011)*14);g.lineTo(W,140);g.fill();
+    /* 과녁(국궁 과녁판과 홍심) */
+    g.fillStyle="#6d4b2c";g.fillRect(CX-50,CY+70,6,40);g.fillRect(CX+44,CY+70,6,40);
+    g.fillStyle="#1d1813";g.fillRect(CX-62,CY-78,124,156);g.fillStyle="#f1ead8";g.fillRect(CX-58,CY-74,116,148);
+    for(const [r,cl] of [[70,"#e9dcb8"],[54,"#2b2b33"],[38,"#f1ead8"],[22,"#2f4a6d"],[14,"#d9432f"],[7,"#f2c94c"]]){g.fillStyle=cl;g.beginPath();g.arc(CX,CY,r,0,7);g.fill()}
+    for(const h of holes){g.fillStyle="#3a2618";g.fillRect(h.x-1,h.y-1,3,3);g.fillStyle="#e9e2cf";g.fillRect(h.x+1,h.y-6,2,5)}
+    /* 바람 깃발 */
+    const fx=24,fy=30;g.fillStyle="#5a3b22";g.fillRect(fx,fy,2,46);const fl=Math.sin(t*9)*2;g.fillStyle="#b53a2c";g.beginPath();g.moveTo(fx+1,fy);g.lineTo(fx+1+wind*5,fy+5+fl);g.lineTo(fx+1,fy+11);g.fill();
+    g.fillStyle="#1d1813";g.font="bold 12px sans-serif";g.fillText("바람 "+(wind>0?"→ ":wind<0?"← ":"")+Math.abs(wind).toFixed(1),fx-12,fy+62);
+    /* 날아가는 화살 */
+    if(fly){const q=(performance.now()-fly.t)/500;if(q>=1){const hp={x:fly.x,y:fly.y},sc=ringScore(hp.x,hp.y);holes.push(hp);score+=sc;fly=null;sfx(sc?"whack":"wrong");
+        st.textContent="화살 "+left+" · 점수 "+score+"  ("+(sc?sc+"점":"빗나감")+")";newWind();if(left<=0)finish()}
+      else{const s=1-q*0.85,x=CX+(fly.x-CX)*q,y=H-10+(fly.y-(H-10))*q-Math.sin(Math.PI*q)*30;g.save();g.translate(x,y);g.scale(s,s);g.fillStyle="#3a2618";g.fillRect(-2,0,4,30);g.fillStyle="#e9e2cf";g.fillRect(-5,22,10,8);g.restore()}}
+    /* 조준점 */
+    if(!fly&&left>0){const [sx,sy]=sway(t),ax=aim.x+sx,ay=aim.y+sy;g.strokeStyle="rgba(200,30,20,.9)";g.lineWidth=2;g.beginPath();g.arc(ax,ay,9,0,7);g.moveTo(ax-15,ay);g.lineTo(ax-4,ay);g.moveTo(ax+4,ay);g.lineTo(ax+15,ay);g.moveTo(ax,ay-15);g.lineTo(ax,ay-4);g.moveTo(ax,ay+4);g.lineTo(ax,ay+15);g.stroke();g.lineWidth=1}
+    /* 시위 힘 막대 */
+    const p=power();g.fillStyle="rgba(29,24,19,.6)";g.fillRect(W-24,40,12,120);g.fillStyle=fatigue()>0?"#d9432f":p>=1?"#f2c94c":"#7fae6a";g.fillRect(W-22,158-116*p,8,116*p);g.fillStyle="#1d1813";g.font="11px sans-serif";g.fillText("힘",W-24,176);
+    for(const k in keys2)if(keys2[k]){aim.x+=k==="l"?-2:k==="r"?2:0;aim.y+=k==="u"?-2:k==="d"?2:0}aim.x=Math.max(20,Math.min(W-20,aim.x));aim.y=Math.max(10,Math.min(H-10,aim.y));
+    requestAnimationFrame(draw)};draw();
+  const finish=()=>{alive=false;const r=score>=40?"명궁이다!":score>=28?"솜씨가 좋다":"바람이 만만치 않다";st.textContent="다섯 발 합계 "+score+"점 · "+r;v.dataset.hot="";setTimeout(()=>{gmClose(v);res(score)},1400)};
+  const start=()=>{if(!alive||fly||left<=0||drawing)return;drawing=true;dStart=performance.now();sfx("pull")};
+  const release=(pw)=>{if(!alive||fly||left<=0)return;const t=(performance.now()-t0)/1000,p=pw!=null?pw:power();drawing=false;const [sx,sy]=sway(t);left--;
+    const x=aim.x+sx+wind*6*(1.2-p*0.5),y=aim.y+sy+(1-p)*55+6;fly={t:performance.now(),x,y};sfx("swish")};
+  btn.addEventListener("pointerdown",e=>{e.preventDefault();start()});btn.addEventListener("pointerup",e=>{e.preventDefault();if(drawing)release()});btn.addEventListener("pointerleave",()=>{if(drawing)release()});
+  btn.addEventListener("click",e=>{if(!drawing&&!fly&&e.detail===0)release(0.9)});   /* 키보드 없이 눌린 click(자동 진행기)은 곧바로 쏜다 */
+  let drag=null;c.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY};c.setPointerCapture(e.pointerId)});
+  c.addEventListener("pointermove",e=>{if(!drag)return;const k=W/c.getBoundingClientRect().width;aim.x+=(e.clientX-drag.x)*k;aim.y+=(e.clientY-drag.y)*k;drag={x:e.clientX,y:e.clientY}});
+  c.addEventListener("pointerup",()=>drag=null);
+  const KM={ArrowLeft:"l",KeyA:"l",ArrowRight:"r",KeyD:"r",ArrowUp:"u",KeyW:"u",ArrowDown:"d",KeyS:"d"};
+  const kd=e=>{if(KM[e.code]){keys2[KM[e.code]]=true;e.preventDefault()}if(e.code==="Space"&&!e.repeat)start()},ku=e=>{if(KM[e.code])keys2[KM[e.code]]=false;if(e.code==="Space"&&drawing)release()};
+  addEventListener("keydown",kd,true);addEventListener("keyup",ku,true);const clean=setInterval(()=>{if(!alive){removeEventListener("keydown",kd,true);removeEventListener("keyup",ku,true);clearInterval(clean)}},400);
+  v.dataset.hot="1";UI.onKey=()=>true})}
 
 /* 파도 피하며 노 젓기: 배를 좌우로 움직여 몰려오는 큰 파도를 피한다. 시간이 다 되면 노가 부러진다(본문대로) */
 function waveRow(){if(LITE())return Promise.resolve();return new Promise(res=>{
