@@ -1882,7 +1882,7 @@ async function startChapter(route,n){
   const C=CHS[route][n];C.setup();updateHUD();setMood(C.mood||"study");
   await run(C.intro);
 }
-async function toNext(title,ev){await orderPuzzle(title,ev);addXp(30);chapterDone();await storyMapSheet();const n=G.ch+1;
+async function toNext(title,ev){await orderPuzzle(title,ev);await chapterSeal(title,30);addXp(30);chapterDone();await storyMapSheet();const n=G.ch+1;
   setTimeout(async()=>{if(n>ROUTES[G.route].chapters.length){await run(async()=>{await stageGame();await tokenGame()});showEnding()}else startChapter(G.route,n)},0)}
 
 /* ═════════ 결말 ═════════ */
@@ -1999,9 +1999,9 @@ function drawSwing(e,sx,sy,t){if(!e.swing)return;const q=(performance.now()/1000
   const d=e.dir,[dx,dy]=DIRV[d],base={r:Math.PI/2,l:-Math.PI/2,u:0,d:Math.PI}[d],hx=sx+8+dx*4,hy=sy+2+(dy<0?-3:dy>0?3:0);ctx.save();
   if(id==="spear"){const k=q<0.3?-q/0.3*3:q<0.55?-3+(q-0.3)/0.25*15:12*(1-(q-0.55)/0.45*0.6);ctx.translate(hx+dx*k,hy+dy*k);ctx.rotate(base);ctx.scale(1.2,1.2);h.d(0,7,t);ctx.restore();
     if(q>0.3&&q<0.85){ctx.strokeStyle="rgba(255,255,255,"+(0.8*(1-(q-0.3)/0.55))+")";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(hx+dx*10,hy+dy*10);ctx.lineTo(hx+dx*(26+k),hy+dy*(26+k));ctx.stroke()}return}
-  const s=d==="l"||d==="u"?-1:1,up=base-s*1.95,down=base+s*0.95,ease=x=>1-Math.pow(1-x,3);
-  const ang=q<0.3?base-s*(1.2+0.75*ease(q/0.3)):q<0.52?up+(down-up)*ease((q-0.3)/0.22):down;
-  if(q>=0.3){const a1=q<0.52?ang:down,fade=q<0.52?0.9:0.9*(1-(q-0.52)/0.48),R=24;
+  const s=d==="l"||d==="u"?-1:1,up=base-s*1.1,down=base+s*0.6,ease=x=>1-Math.pow(1-x,3);
+  const ang=q<0.25?base-s*(0.5+0.6*ease(q/0.25)):q<0.42?up+(down-up)*ease((q-0.25)/0.17):down;
+  if(q>=0.25){const a1=q<0.42?ang:down,fade=q<0.42?0.9:0.9*(1-(q-0.42)/0.58),R=24;
     ctx.fillStyle="rgba(255,255,255,"+fade*0.55+")";ctx.beginPath();ctx.arc(hx,hy,R,up-Math.PI/2,a1-Math.PI/2,s<0);ctx.arc(hx,hy,R-7,a1-Math.PI/2,up-Math.PI/2,s>0);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(255,250,215,"+fade+")";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(hx,hy,R,up-Math.PI/2,a1-Math.PI/2,s<0);ctx.stroke()}
   ctx.translate(hx,hy);ctx.rotate(ang);ctx.scale(1.35,1.35);h.d(0,0,t);ctx.restore()}
@@ -2255,6 +2255,43 @@ function seenLine(t){const E=G.ex;if(!E)return false;if(!SEEN)SEEN=new Set(E.see
 
 /* ── 증표첩 ── */
 function tokensHTML(){const T=G.ex.tokens||[];return `<div class="stamps">${Object.entries(TOKENS).map(([id,t])=>T.includes(id)?`<div class="stamp on"><b>${esc(t.n)}</b>${esc(t.d)}</div>`:`<div class="stamp"><b style="color:#b9a987">?</b>아직 얻지 못한 증표</div>`).join("")}</div>`}
+
+/* ── 장 마침 도장(교사 의견 2026-11-06 “게임 느낌”): 줄거리 잇기를 마치면 종이에 「n장 마침」 낙관이 쾅 찍히고 배움이 올라간다.
+   떨어짐 → 찍힘(종이가 튀고 먹 방울이 튐) → 배움 세기. 누르면 바로 넘어간다. 움직임 줄이기 설정이면 다 찍힌 모습만 보인다 ── */
+(()=>{const st=document.createElement("style");st.textContent=`.chend{position:relative;width:min(420px,100%);background:var(--paper);border:3px solid var(--ink2,#1b1a17);box-shadow:0 0 0 2px var(--paper) inset,0 0 0 3px var(--line) inset,0 10px 0 rgba(0,0,0,.4);padding:26px 24px 20px;text-align:center;animation:chIn .32s cubic-bezier(.2,.9,.3,1.2) both}
+.chend .eb{display:block;font-family:var(--ui);font-size:12px;letter-spacing:.2em;color:var(--seal)}
+.chend h2{font-family:var(--display);font-weight:400;font-size:clamp(22px,5.6vw,30px);margin:6px 0 2px;color:var(--text);line-height:1.25}
+.chend p{font-family:var(--ui);font-size:13px;color:var(--muted);margin:0}
+.chend .chpad{position:relative;height:118px;margin:10px 0 6px}
+.chend .stampc{position:absolute;left:50%;top:50%;width:92px;height:92px;margin:-46px 0 0 -46px;display:grid;place-items:center;border:4px solid var(--seal);outline:2px solid var(--seal);outline-offset:3px;color:var(--seal);font-family:var(--display);font-size:22px;line-height:1.15;transform:rotate(-8deg);opacity:0;
+  background:radial-gradient(circle at 30% 70%,rgba(179,54,43,.10) 0 18%,transparent 19%),radial-gradient(circle at 72% 28%,rgba(179,54,43,.08) 0 14%,transparent 15%)}
+.chend.go .stampc{animation:chDrop .26s cubic-bezier(.5,0,.9,.4) .42s forwards}
+.chend.hit{animation:chJolt .22s ease-out}
+.chend .ink{position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2px;border-radius:50%;background:var(--seal);opacity:0;animation:chInk .5s ease-out forwards}
+.chend .xp{font-family:var(--ui);font-weight:700;font-size:15px;color:#8a6a1f;min-height:22px;margin-top:2px}
+.chend .xp b{font-size:22px;color:#b0821f}
+.chend .row{margin-top:12px;justify-content:center}
+@keyframes chIn{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes chDrop{0%{opacity:0;transform:rotate(-24deg) scale(2.6)}70%{opacity:1;transform:rotate(-8deg) scale(.9)}100%{opacity:1;transform:rotate(-8deg) scale(1)}}
+@keyframes chJolt{0%{transform:translateY(0)}30%{transform:translateY(5px) scale(1.01,.985)}65%{transform:translateY(-2px)}100%{transform:none}}
+@keyframes chInk{0%{opacity:.9;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.4)}}
+@media (prefers-reduced-motion:reduce){.chend,.chend.hit,.chend.go .stampc{animation:none}.chend .stampc{opacity:1}.chend .ink{display:none}}`;document.head.appendChild(st)})();
+function chapterSeal(title,xp){return new Promise(res=>{
+  const m=String(title).match(/^제(\d+)장\s*(.*)$/),n=m?m[1]:"",name=m?m[2]:title,calm=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  UI.modal=true;setBodyTalking(true);const v=document.createElement("div");v.className="veil";
+  v.innerHTML=`<div class="chend"><span class="eb">${esc(ROUTES[G.route].name)} 편 · 제${esc(n)}장</span><h2>${esc(name)}</h2><p>이 장의 줄거리를 다시 이었어요</p>
+    <div class="chpad"><div class="stampc">${esc(n)}장<br>마침</div></div><div class="xp"></div>
+    <div class="row"><button class="btn pri" data-go>이야기 지도 보기 ▶</button></div></div>`;
+  $("#ui").appendChild(v);const card=v.querySelector(".chend"),pad=v.querySelector(".chpad"),xpEl=v.querySelector(".xp");const timers=[];
+  const count=()=>{const t0=performance.now();const f=now=>{const q=Math.min(1,(now-t0)/520);xpEl.innerHTML=`배움 <b>+${Math.round(xp*q)}</b>`;if(q<1&&v.isConnected)requestAnimationFrame(f);else if(v.isConnected)sfx("gain")};requestAnimationFrame(f)};
+  if(calm){card.querySelector(".stampc").style.opacity=1;sfx("stamp");xpEl.innerHTML=`배움 <b>+${xp}</b>`}
+  else{requestAnimationFrame(()=>card.classList.add("go"));
+    timers.push(setTimeout(()=>{sfx("stamp");card.classList.add("hit");
+      for(let i=0;i<9;i++){const d=document.createElement("i");d.className="ink";const a=i/9*Math.PI*2+Math.random()*0.5,r=46+Math.random()*26;d.style.setProperty("--dx",Math.cos(a)*r+"px");d.style.setProperty("--dy",Math.sin(a)*r+"px");d.style.width=d.style.height=(3+Math.random()*4)+"px";pad.appendChild(d)}},600));
+    timers.push(setTimeout(count,900))}
+  const done=()=>{timers.forEach(clearTimeout);v.remove();UI.modal=false;UI.onKey=null;setBodyTalking(false);res()};
+  v.addEventListener("click",e=>{if(e.target.closest("[data-go]"))done()});
+  UI.onKey=e=>{if(["Enter","Space","KeyE"].includes(e.code))done();return true}})}
 
 /* ═════════ 동아시아 지도: 이 작품은 인물들이 조선·일본·명나라·안남·오랑캐 땅을 오가는 이야기라, 지도를 늘 곁에 둔다 ═════════
    - 화면 위 ‘지도’ 단추: 언제든 지금까지 지나온 길과 지금 있는 곳을 본다
@@ -2716,7 +2753,7 @@ function fieldBattle(cfg){
     const pop=(e,word,col)=>FX.push({k:"hit",e,t0:now(),dur:0.6,word,col:col||"#f07a6a"});
     const end=()=>{if(B.over)return;B.over=true;G.battle=null;G.lock=lockWas;hud.remove();if(act)act.textContent=actTxt;setTimeout(()=>res(B),350)};
     const check=()=>{if(cfg.until?cfg.until(B):!alive().length)end()};
-    B.attack=()=>{if(B.over||B.acd>0||UI.modal)return;B.acd=0.3;const [dx,dy]=DIRV[p.dir];
+    B.attack=()=>{if(B.over||B.acd>0||UI.modal)return;B.acd=0.4;const [dx,dy]=DIRV[p.dir];
       const adj=alive().filter(q=>inReach(q,p)),front=q=>Math.sign(q.e.tx-p.tx)===dx&&Math.sign(q.e.ty-p.ty)===dy,can=q=>q.hp>(q.floor||0);
       let f=adj.find(q=>front(q)&&can(q))||adj.find(can)||adj.find(front)||adj[0];
       const armed=p.look!=="bell"&&weaponOf(p);
